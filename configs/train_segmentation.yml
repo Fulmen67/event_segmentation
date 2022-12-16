@@ -7,7 +7,7 @@ data:
     window_loss: 10000 # events
 
 model:
-    name: EVFlowNet # EVFlowNet/*FireFlowNet/*FireNet/E2VID/RecEVFlowNet
+    name: EVFlowNet_Segmentation # EVFlowNet/*FireFlowNet/*FireNet/E2VID/RecEVFlowNet
     encoding: cnt # voxel/cnt
     round_encoding: False # for voxel encoding
     norm_input: False # normalize input
