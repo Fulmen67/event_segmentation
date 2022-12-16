@@ -1,0 +1,68 @@
+data:
+  mode: events
+  path: datasets/data/ECD/
+  window: 15000
+  window_eval: 15000
+  window_loss: 10000
+experiment: Default
+hot_filter:
+  enabled: true
+  max_px: 100
+  max_rate: 0.8
+  min_obvs: 5
+loader:
+  augment: []
+  augment_prob:
+  - 0.5
+  - 0.5
+  - 0.5
+  batch_size: 1
+  gpu: 0
+  n_epochs: 100
+  resolution:
+  - 180
+  - 240
+  seed: 0
+loss:
+  clip_grad: 100.0
+  flow_regul_weight: 0.001
+  overwrite_intermediate: false
+metrics:
+  flow_scaling: 128
+  name:
+  - FWL
+  - RSAT
+model:
+  activations:
+  - arctanspike
+  - arctanspike
+  base_num_channels: 32
+  encoding: cnt
+  kernel_size: 3
+  mask_output: true
+  name: LIFFireNet
+  norm_input: false
+  num_bins: 2
+  round_encoding: false
+  spiking_neuron:
+    hard_reset: true
+    leak:
+    - -4.0
+    - 0.1
+    learn_leak: true
+    learn_thresh: true
+    thresh:
+    - 0.8
+    - 0.1
+optimizer:
+  lr: 0.0002
+  name: Adam
+prev_runid: ''
+vis:
+  activity: false
+  bars: true
+  enabled: true
+  px: 400
+  store: false
+  store_grads: true
+  verbose: true
