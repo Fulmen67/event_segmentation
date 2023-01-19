@@ -8,15 +8,19 @@ import numpy as np
 import yaml
 
 from h5_packager import H5Packager
-
+import pandas as pd
 
 # TODO: add option to remove hot pixels already in the preprocessing stage
-def process(path, args, original_res=(180, 240)):
-    _, filename = os.path.split(path)
+def process(path, args, original_res=(480, 640)):
+    folders, filename = os.path.split(path)
 
     # open original file, create new file
-    ep = H5Packager(args.output_dir + filename.split(".")[0] + ".h5")
-
+    # get the names of folders in a list
+    
+    folders = folders.split("/")
+    #output_path = "_".join(folders[4:9])
+    ep = H5Packager(args.output_dir + "_".join(folders[4:9]) + ".h5")
+    #ep = H5Packager(args.output_dir + filename.split(".")[0] + ".h5")
     t0 = -1
     idx = 0
     sensor_size = None
@@ -62,8 +66,8 @@ def process(path, args, original_res=(180, 240)):
         last_timestamp,
         0,
         0,
-        sensor_size,
-        [(-1, -1), (-1, -1)],
+        #sensor_size,
+        #[(-1, -1), (-1, -1)],
     )
 
 
@@ -72,17 +76,20 @@ if __name__ == "__main__":
     Tool for converting EVIMO2 Dataset.
     """
     parser = argparse.ArgumentParser()
-    parser.add_argument("--path", default="/data/youssef/datasets/evimo_2")
-    parser.add_argument("--output_dir", default="/data/youssef/datasets/evimo_2_h5")
+    parser.add_argument("--path", default="/data/youssef/datasets/evimo_2/")
+    parser.add_argument("--output_dir", default="/data/youssef/datasets/evimo_2_h5/training/")
     args = parser.parse_args()
 
     # get files to process
     paths = []
     for root, dirs, files in os.walk(args.path):
         for file in files:
-            if file.endswith(".txt"):
+            # skip eval folders
+            if "eval" in root:
+                continue
+            if file.endswith("events.txt"):
                 paths.append(os.path.join(root, file))
-
+    
     # make sure output directory exists
     if not os.path.isdir(args.output_dir):
         os.makedirs(args.output_dir)

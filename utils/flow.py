@@ -1,46 +1,48 @@
 import torch
+from tqdm import tqdm
 
-def get_optical_flow(A, H, W):
-
+def get_optical_flow(A, flow_list, coords):
     """
     Calculates estimated optical flow for a given motion model A
-    Input: A: 2x3 motion model
-              H: height of image
-                W: width of image
-    Output: flow: HxWx2 tensor of estimated optical flow
-
+    Input: A: [batch_size x N_classes x 2 x 3]   2x3   (1,x,y)x1
+           flow_list: [batch_size x N_classes x 2 x H x W ] list of optical flow (x, y) maps
+    Output: flow: batch_size x N_classes x 2 x H x W ]tensor of estimated optical flow
     """
-   
-    flow = torch.zeros((H, W, 2)) 
-
-    for h in range(H):
-        for w in range(W):
-            u_x, u_y = torch.matmul(A,torch.tensor([1,h,w]))
-            flow[h,w,0] = u_x
-            flow[h,w,1] = u_y
     
-        
+    for b in range(A.shape[0]): # B
+        for n in range(A.shape[1]): # N_classes  
+            flow_list[b,n, :, :, :] = torch.matmul(A[b,n,:], coords.view(3, -1)).view(2, flow_list.shape[3], flow_list.shape[4])
+    return flow_list
+
+def get_optical_flow_old(A, flow_list):
+    """
+    Calculates estimated optical flow for a given motion model A
+    Input: A: [batch_size x N_classes x 2 x 3]   2x3   (1,x,y)x1
+           flow_list: [batch_size x N_classes x 2 x H x W ] list of optical flow (x, y) maps
+    Output: flow: batch_size x N_classes x 2 x H x W ]tensor of estimated optical flow
+    """
+    B, N_classes, H, W = flow_list.shape
     
-    
-    return flow
-
-
-if __name__ == '__main__':
-    
-    # param flow_list: [batch_size x N_classes x 2 x H x W] list of optical flow (x, y) maps
-
-    batch_size = 1
-    N_classes = 3
-    H = 4
-    W = 5
-    flow_list = torch.zeros((batch_size, N_classes, 2, H, W))
-
-    for n in range(N_classes):
-        flow_list_loop = flow_list[:,n,:,:,:]
-        print(flow_list_loop.shape)
-        for i, flow in enumerate(flow_list_loop):
-            pass
-            print(flow.shape)
-
-    
+    for b in range(A.shape[0]): # B
+        for n in range(A.shape[1]): # N_classes
+            for h in range(H): 
+                for w in range(W):
+                    u_x, u_y = torch.matmul(A[b,n,:],torch.tensor([1,h,w], device = A.device, dtype = A.dtype))
+                    flow_list[b,n,h,w,0] = u_x
+                    flow_list[b,n,h,w,1] = u_y     
             
+    return flow_list
+
+
+    
+#coord tensor
+        #H, W = config["loader"]["resolution"]
+        #B = config["loader"]["batch_size"]
+        #coords= torch.empty(3,H,W).to(device)
+        #coords[0] = 1
+        #coords[1] = torch.arange(H).view(H, 1).repeat(1, W)
+        #coords[2] = torch.arange(W).view(1, W).repeat(H, 1)
+        
+        #flow list
+        #flow_list = torch.empty(B,5,2, H, W).to(device)
+        #flow_list = get_optical_flow(motion_models, alpha_masks, coords)

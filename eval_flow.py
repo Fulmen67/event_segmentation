@@ -16,6 +16,7 @@ from models.model import (
     LeakyFireFlowNet,
     E2VID,
     EVFlowNet,
+    EVFlowNet_Segmentation,
     RecEVFlowNet,
     LeakyRecEVFlowNet,
     RNNRecEVFlowNet,
@@ -42,7 +43,7 @@ def test(args, config_parser):
 
     run = mlflow.get_run(args.runid)
     config = config_parser.merge_configs(run.data.params)
-
+    """
     # configs
     if config["loader"]["batch_size"] > 1:
         config["vis"]["enabled"] = False
@@ -69,7 +70,7 @@ def test(args, config_parser):
         else:
             assert np.isclose(
                 config["data"]["window"] % 1.0, 0.0
-            ), "Frames mode not compatible with > 1 fractional windows"
+            ), "Frames mode not compatible with > 1 fractional windows" """
 
     if not args.debug:
         # create directory for inference results
@@ -119,7 +120,7 @@ def test(args, config_parser):
     with torch.no_grad():
         while True:
             for inputs in dataloader:
-
+                
                 if data.new_seq:
                     data.new_seq = False
                     activity_log = None
@@ -129,7 +130,7 @@ def test(args, config_parser):
                 if data.seq_num >= len(data.files):
                     end_test = True
                     break
-
+                """
                 # forward pass
                 x = model(
                     inputs["event_voxel"].to(device), inputs["event_cnt"].to(device), log=config["vis"]["activity"]
@@ -211,14 +212,14 @@ def test(args, config_parser):
 
                             # reset criteria
                             criteria[i].reset()
-
+                """
                 # visualize
                 if config["vis"]["bars"]:
                     for bar in data.open_files_bar:
                         bar.next()
                 if config["vis"]["enabled"]:
-                    vis.update(inputs, flow_vis, iwe, events_window_vis, masked_window_flow_vis, iwe_window_vis)
-                if config["vis"]["store"]:
+                    vis.update(inputs, None, None)# flow_vis, iwe, ev  events_window_vis, masked_window_flow_vis, iwe_window_vis)
+                """if config["vis"]["store"]:
                     sequence = data.files[data.batch_idx[0] % len(data.files)].split("/")[-1].split(".")[0]
                     vis.store(
                         inputs,
@@ -229,11 +230,11 @@ def test(args, config_parser):
                         masked_window_flow_vis,
                         iwe_window_vis,
                         ts=data.last_proc_timestamp,
-                    )
+                    )"""
 
-                # visualize activity
+                """# visualize activity
                 if config["vis"]["activity"]:
-                    activity_log = vis_activity(x["activity"], activity_log)
+                    activity_log = vis_activity(x["activity"], activity_log)"""
 
             if end_test:
                 break
@@ -263,7 +264,7 @@ if __name__ == "__main__":
     parser.add_argument("runid", help="mlflow run")
     parser.add_argument(
         "--config",
-        default="configs/eval_flow.yml",
+        default="configs/eval_EVIMO-2.yml",
         help="config file, overwrites mlflow settings",
     )
     parser.add_argument(

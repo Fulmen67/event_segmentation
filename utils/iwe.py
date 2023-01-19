@@ -145,17 +145,9 @@ def compute_pol_iwe(flow, event_list, res, pos_mask, neg_mask, flow_scaling=128,
     iwe_pos = deblur_events(
         flow, event_list, res, flow_scaling=flow_scaling, round_idx=round_idx, polarity_mask=pos_mask
     )
-
     iwe_neg = deblur_events(
         flow, event_list, res, flow_scaling=flow_scaling, round_idx=round_idx, polarity_mask=neg_mask
     )
-
     iwe = torch.cat([iwe_pos, iwe_neg], dim=1)
 
     return iwe
-
-
-
-
-
-

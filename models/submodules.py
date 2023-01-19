@@ -14,7 +14,7 @@ class Linear(nn.Module):
     Default: bias, leaky relu, no downsampling, no batch norm.
     
     """
-    def __init__(self, in_features, out_features, activation="leaky_relu", norm=None, BN_momentum=0.1, w_scale=None):
+    def __init__(self, in_features, out_features, activation="LeakyReLU", norm=None, BN_momentum=0.1, w_scale=None):
         super(Linear, self).__init__()
         bias = False if norm == "BN" else True
         self.linear = nn.Linear(in_features, out_features, bias=bias)
@@ -25,6 +25,8 @@ class Linear(nn.Module):
         if activation is not None:
             if hasattr(torch, activation):
                 self.activation = getattr(torch, activation)
+            elif hasattr(nn, activation):
+                self.activation = getattr(nn, activation)()
             else:
                 self.activation = getattr(spiking, activation)
         else:
@@ -35,19 +37,15 @@ class Linear(nn.Module):
         else:
             self.norm = None
     
-    def forward(self, x):
+    def forward(self, x): 
         x = self.linear(x)
         if self.norm is not None:
             x = self.norm(x)
         if self.activation is not None:
-            x = self.activation(x)
+            x = self.activation(x)        
         return x
     
-    
-    
-    
-
-    
+     
 class ConvLayer(nn.Module):
     """
     Convolutional layer.

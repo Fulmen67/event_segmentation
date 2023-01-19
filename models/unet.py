@@ -106,16 +106,16 @@ class BaseUNet(nn.Module):
         self.max_num_channels = self.encoder_output_sizes[-1]
 
         self.encoder_optical_flow_module_input_sizes = [
-            int(self.max_num_channels * pow(self.channel_multiplier,i) for i in range(self.num_encoders_optical_flow_module))
-        ]
+            int(self.max_num_channels * pow(self.channel_multiplier,i)) for i in range(self.num_encoders_optical_flow_module)
+        ] 
         self.encoder_optical_flow_module_output_sizes = [
-            int(self.max_num_channels * pow(self.channel_multiplier,i + 1) for i in range(self.num_encoders_optical_flow_module))
+            int(self.max_num_channels * pow(self.channel_multiplier,i + 1)) for i in range(self.num_encoders_optical_flow_module)
         ]
 
         self.num_neurons_ff_optical_flow_module = [
-            512, 256, 64, 6*self.num_motion_models
+          320, 256, 64, 6*self.num_motion_models
         ]
-
+             
     def build_encoders(self):
         encoders = nn.ModuleList()
         for (input_size, output_size) in zip(self.encoder_input_sizes, self.encoder_output_sizes):
@@ -188,10 +188,7 @@ class MultiResUNet_Segmentation(BaseUNet):
 
         self.encoders = self.build_encoders()
         self.resblocks = self.build_resblocks()
-        self.decoders =  self.build_decoders_segmentation_module() #self.build_multires_prediction_decoders()
-
-        self.preds = self.build_multires_prediction_layer()
-
+        self.decoders =  self.build_decoders_segmentation_module() 
         self.encoders_optical_flow_module = self.build_encoders_optical_flow_module()
         self.feedforward_optical_flow_module = self.build_feedforward_optical_flow_module()
 
@@ -212,57 +209,49 @@ class MultiResUNet_Segmentation(BaseUNet):
                 )
             )
         return encoders
-
-    def build_multires_prediction_layer(self):
-        preds = nn.ModuleList()
-        decoder_output_sizes = reversed(self.encoder_input_sizes)
-        for output_size in decoder_output_sizes:
-            preds.append(
-                self.ff_type(output_size, self.num_output_channels, 1, activation=self.final_activation, norm=self.norm)
-            )
-        return preds
-
-    def build_multires_prediction_decoders(self):
-        decoder_input_sizes = reversed(self.encoder_output_sizes)
-        decoder_output_sizes = reversed(self.encoder_input_sizes)
-        decoders = nn.ModuleList()
-        for i, (input_size, output_size) in enumerate(zip(decoder_input_sizes, decoder_output_sizes)):
-            prediction_channels = 0 if i == 0 else self.num_output_channels
-            decoders.append(
-                self.UpsampleLayer(
-                    2 * input_size + prediction_channels,
-                    output_size,
-                    kernel_size=self.kernel_size,
-                    activation=self.ff_act,
-                    norm=self.norm,
-                    **self.spiking_kwargs
-                )
-            )
-        return decoders
-
+    
     def build_decoders_segmentation_module(self):
         decoder_input_sizes = reversed(self.encoder_output_sizes)
         decoder_output_sizes = reversed(self.encoder_input_sizes)
+        decoder_input_sizes = list(decoder_input_sizes)
+        decoder_output_sizes = list(decoder_output_sizes)
+        decoder_input_sizes.append(32)
+        decoder_output_sizes.append(5)
+        
+        
         decoders = nn.ModuleList()
         for input_size, output_size in zip(decoder_input_sizes, decoder_output_sizes):
-            decoders.append(
-                self.UpsampleLayer(
-                    input_size if self.skip_type == "sum" else 2 * input_size,
-                    output_size,
-                    kernel_size=self.kernel_size,
-                    activation=self.ff_act,
-                    norm=self.norm,
-                    **self.spiking_kwargs
+            # the last layer of the decoder serves to bring the number of channels from 32 to 5, so that we have a mask
+            if input_size == 32 and output_size == 5:
+                decoders.append(
+                    self.ff_type(
+                        input_size,
+                        output_size,
+                        kernel_size=1,
+                        activation=self.ff_act,
+                        norm=self.norm,
+                        **self.spiking_kwargs
+                    )
                 )
-            )
+            else:
+                decoders.append(
+                    self.UpsampleLayer(
+                        input_size if self.skip_type == "sum" else 2 * input_size,
+                        output_size,
+                        kernel_size=self.kernel_size ,
+                        activation=self.ff_act,
+                        norm=self.norm,
+                        **self.spiking_kwargs
+                    )
+                )
         return decoders
 
     def build_encoders_optical_flow_module(self):
 
         encoders = nn.ModuleList()
         for i, (input_size, output_size) in enumerate(zip(self.encoder_optical_flow_module_input_sizes, self.encoder_optical_flow_module_output_sizes)):
-            if i == 0:
-                input_size = self.num_bins
+            """if i == 0:
+                input_size = self.num_bins"""
             encoders.append(
                 self.ff_type(
                     input_size,
@@ -280,11 +269,11 @@ class MultiResUNet_Segmentation(BaseUNet):
         feature_size = self.num_neurons_ff_optical_flow_module
         feedforward = nn.ModuleList()
         for i in range(1,len(feature_size)):
+            
             feedforward.append(
                 self.linear_type(
                     feature_size[i-1],
-                    feature_size[i],
-                    
+                    feature_size[i],    
                 )
             )
         
@@ -305,41 +294,45 @@ class MultiResUNet_Segmentation(BaseUNet):
         # residual blocks
         for resblock in self.resblocks:
             x, _ = resblock(x)
-
-
-        # pass output of residual blocks to optical flow module
-        blocks_optical_flow_module = []
+    
+        # encoder optical flow module
         for i, encoder in enumerate(self.encoders_optical_flow_module):
-            x_flow = encoder(x)
-            blocks_optical_flow_module.append(x_flow)
+            x_flow = encoder(x if i == 0 else x_flow)
 
-        # flatten the output of optical flow module and pass it to a linear layer
-        x_flow = x_flow.view(x_flow.size(0), -1)
+        # apply max pooling to reduce number of elements to be passed to feedforward module
+        pool1 = torch.nn.MaxPool2d(2)
+        pool2 = torch.nn.MaxPool2d(4)
+        pool3 = torch.nn.MaxPool2d(2)
         
+        x_flow = pool1(x_flow.view(x_flow.shape[0], 1, 256, 320))
+        x_flow = pool2(x_flow.view(x_flow.shape[0], 1, 128, 160))
+        x_flow = pool3(x_flow.view(x_flow.shape[0], 1, 32, 40)).view(x_flow.shape[0], -1)
+        
+        # feedforward optical flow module
         for i, feedforward in enumerate(self.feedforward_optical_flow_module):
             x_flow = feedforward(x_flow)
-            x_flow = self.ff_act(x_flow)
-
-        #reshape the output of the optical flow module 
-
-        x_flow = x_flow.reshape(self.num_motion_models, 2, 3)
-
-        # decoder and multires predictions     HERE WE NEED TO CHANGE THIS AND MAKE JUST A SIMPLE DECODER WITHOUT PREDICTIONS!
-        #predictions = []
-        output_segmentation_module = []
-        #for i, (decoder, pred) in enumerate(zip(self.decoders, self.preds)):
-        for i, decoder in enumerate(self.decoders):
-            x = self.skip_ftn(x, blocks[self.num_encoders - i - 1])
-            #if i > 0:
-            #   x = self.skip_ftn(predictions[-1], x)
-            x = decoder(x)
-            output_segmentation_module.append(x)
-
+         
+        x_flow = x_flow.reshape(x_flow.shape[0], self.num_motion_models, 2, 3)
         
-
-        return {'output_segmentation_module': output_segmentation_module[-1],
-                'motion_models': x_flow}
-
+        # decoder segmentation module
+        for i, decoder in enumerate(self.decoders):
+            if i != 4:
+                if i == 0:
+                    x_seg = self.skip_ftn(x, blocks[self.num_encoders - i - 1]) 
+                else: 
+                    x_seg = self.skip_ftn(x_seg, blocks[self.num_encoders - i - 1]) 
+            x_seg = decoder(x_seg)
+        
+        # apply sigmoid to restrict values to [0,1]
+        sigmoid = nn.Sigmoid()
+        x_seg = sigmoid(x_seg)
+        
+        # apply softmax 
+        softmax = nn.Softmax(dim=1)
+        x_seg = softmax(x_seg)
+         
+        return {'alpha mask': x_seg,'motion models': x_flow}
+        
 class MultiResUNet(BaseUNet):
     """
     Conventional UNet architecture.

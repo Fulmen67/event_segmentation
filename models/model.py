@@ -46,7 +46,7 @@ class EVFlowNet_Segmentation(BaseModel):
             "base_num_channels": unet_kwargs["base_num_channels"],
             "num_encoders": 4,
             "num_residual_blocks": 2,
-            "num_output_channels": 1,   # it was 2 {u_x,u_y}, but now it's 1 since each pixel has to output only 1 value for the alpha map
+            "num_output_channels": 5,   
             "skip_type": "concat",
             "norm": None,
             "use_upsample_conv": True,
@@ -58,7 +58,7 @@ class EVFlowNet_Segmentation(BaseModel):
             "num_encoders_optical_flow_module": 3,
             "num_ff_layers_optical_flow_module": 4,
             
-            "num_motion_models": 2
+            "num_motion_models": 5
         }
 
         self.crop = None
@@ -78,7 +78,7 @@ class EVFlowNet_Segmentation(BaseModel):
         unet_kwargs.pop("norm_input", None)
         unet_kwargs.pop("spiking_neuron", None)
 
-        self.multires_unet = MultiResUNet_Segmentation(unet_kwargs)  # NETWORK ARCHITECTURE 
+        self.multires_unet = MultiResUNet_Segmentation(unet_kwargs)
 
     def detach_states(self):
         pass
@@ -118,59 +118,27 @@ class EVFlowNet_Segmentation(BaseModel):
         if self.crop is not None:
             x = self.crop.pad(x)
 
-        # forward pass
-        multires_flow = self.multires_unet.forward(x)      # OUTPUT
-
+        # forward pass  
+        multires_flow = self.multires_unet.forward(x)
+        
         # log activity
         if log:
             raise NotImplementedError("Activity logging not implemented")
         else:
             activity = None
 
-        output_decoder = multires_flow["output_segmentation module"]
-        motion_models = multires_flow["motion_models"]
-
         # calculate all estimated optical flows given the motion models
-        H = output_decoder.shape[2]
-        W = output_decoder.shape[3]
-        flow_list = torch.empty(self.num_motion_models, H, W, 2)
-
-        for i in range(self.num_motion_models):
-            flow_list[i] = get_optical_flow(motion_models[i], H, W)
+        B, N_classes, H, W = multires_flow["alpha mask"].shape
+        flow_list = torch.zeros(B, N_classes, 2, H, W).to(multires_flow["alpha mask"].device)
+        for b in range(B):
+            flow_list[b,:,:,:,:] = nn.functional.affine_grid(
+                multires_flow["motion models"][b,:,:,:].view(-1,2,3),
+                (N_classes, 2, H, W)
+                ).view(N_classes, 2, H, W)                                       
         
-        #restrict last mask output to be between 0 and 1
-        sigmoid = nn.Sigmoid()
-        output_decoder = sigmoid(output_decoder)
-
-        # compute masks
-
-        output_decoder_softmax_binned = softmax_binning(self.num_motion_models, output_decoder)
-        alpha_masks = get_masks(output_decoder_softmax_binned)
-
+        flow_list = (flow_list * multires_flow["alpha mask"][:, :, None, :, :]).sum(1)
         
-
-        """
-        # upsample flow estimates to the original input resolution
-        flow_list = []
-        for flow in multires_flow:
-            flow_list.append(
-                torch.nn.functional.interpolate(
-                    flow,
-                    scale_factor=(
-                        multires_flow[-1].shape[2] / flow.shape[2],
-                        multires_flow[-1].shape[3] / flow.shape[3],
-                    ),
-                )
-            )
-        
-        # crop output
-        if self.crop is not None:
-            for i, flow in enumerate(flow_list):
-                flow_list[i] = flow[:, :, self.crop.iy0 : self.crop.iy1, self.crop.ix0 : self.crop.ix1]
-                flow_list[i] = flow_list[i].contiguous()
-        """
-        
-        return {"flow": flow_list, "alpha_maps": alpha_masks, "activity": activity} # OUTPUT flow_lists  -> what we should output is two alpha maps and two flow fields
+        return {"flow": flow_list, "activity": activity} 
 
 
 

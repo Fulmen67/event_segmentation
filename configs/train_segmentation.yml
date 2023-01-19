@@ -1,10 +1,10 @@
 experiment: Default
 
 data:
-    path: datasets/data/training/
+    path: /data/youssef/datasets/evimo_2_h5/training/
     mode: events # events/time
     window: 1000 # events/time
-    window_loss: 10000 # events
+    window_loss: 1000 # events
 
 model:
     name: EVFlowNet_Segmentation # EVFlowNet/*FireFlowNet/*FireNet/E2VID/RecEVFlowNet
@@ -30,8 +30,8 @@ optimizer:
 
 loader:
     n_epochs: 100
-    batch_size: 8
-    resolution: [128, 128] # H x W
+    batch_size: 8 #8
+    resolution: [480, 640] # H x W
     augment: ["Horizontal", "Vertical", "Polarity"]
     augment_prob: [0.5, 0.5, 0.5]
     gpu: 0
