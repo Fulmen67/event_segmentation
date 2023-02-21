@@ -82,7 +82,12 @@ class BaseDataLoader(torch.utils.data.Dataset):
         ts = torch.from_numpy(ts.astype(np.float32))
         ps = torch.from_numpy(ps.astype(np.float32)) * 2 - 1
         if ts.shape[0] > 0:
-            ts = (ts - ts[0]) / (ts[-1] - ts[0])
+            # normalize timestamps to [0, 1]
+            # handle extreme cases where all timestamps are the same
+            if ts[-1] == ts[0]:
+                ts = torch.ones_like(ts)
+            else:
+                ts = (ts - ts[0]) / (ts[-1] - ts[0])
         return xs, ys, ts, ps
 
     def augment_events(self, xs, ys, ps, batch):

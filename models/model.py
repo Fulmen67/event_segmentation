@@ -4,6 +4,7 @@ Adapted from UZH-RPG https://github.com/uzh-rpg/rpg_e2vid
 
 import torch
 import torch.nn as nn
+import logging
 
 from utils.softmax_binning import softmax_binning, get_masks
 
@@ -127,16 +128,60 @@ class EVFlowNet_Segmentation(BaseModel):
         else:
             activity = None
 
-        # calculate all estimated optical flows given the motion models
+        # Extract alpha mask size and initiate flow list
         B, N_classes, H, W = multires_flow["alpha mask"].shape
         flow_list = torch.zeros(B, N_classes, 2, H, W).to(multires_flow["alpha mask"].device)
+        
+        # Calculate flow for each motion model
         for b in range(B):
             flow_list[b,:,:,:,:] = nn.functional.affine_grid(
                 multires_flow["motion models"][b,:,:,:].view(-1,2,3),
                 (N_classes, 2, H, W)
-                ).view(N_classes, 2, H, W)                                       
+                ).view(N_classes, 2, H, W)  
+            
+        # Find max values for each pixel in the alpha mask
+        max_vals, _ = torch.max(multires_flow["alpha mask"], dim=1, keepdim=True)
+
+        # Replace all values below the maximum with zeros
+        multires_flow["alpha mask"] = torch.where(multires_flow["alpha mask"] < max_vals, 
+                                                  torch.zeros_like(multires_flow["alpha mask"]), 
+                                                  multires_flow["alpha mask"])
         
+        assert torch.sum(multires_flow["alpha mask"], dim=1).max() <= 1.0001, "More than one alpha mask is active"
+        
+        # calculate combined flow
         flow_list = (flow_list * multires_flow["alpha mask"][:, :, None, :, :]).sum(1)
+        
+        # binarize alpha mask
+        #multires_flow["alpha mask"] = torch.where(multires_flow["alpha mask"] > 0, 
+                                                 # torch.ones_like(multires_flow["alpha mask"]), 
+                                                 # multires_flow["alpha mask"])
+        # Set the logging level to INFO or DEBUG, depending on your needs
+        #logging.basicConfig(level=logging.INFO)
+
+        # Create a file handler that writes log messages to a file
+        #file_handler = logging.FileHandler("debug.log")
+        #file_handler.setLevel(logging.DEBUG)
+
+        # Create a formatter for the log messages
+        #formatter = logging.Formatter('%(asctime)s - %(name)s - %(levelname)s - %(message)s')
+        #ile_handler.setFormatter(formatter)
+
+        # Add the file handler to the root logger
+        #logging.getLogger().addHandler(file_handler)
+
+        # Log the value of the tensor and its shape
+        #logging.info(f"multires_flow['alpha mask'] = {multires_flow['alpha mask']}")
+        #logging.info(f"multires_flow['alpha mask'].shape = {multires_flow['alpha mask'].shape}")
+
+        # Log the value of max_vals and its shape
+        #logging.info(f"max_vals = {max_vals}")
+        #logging.info(f"max_vals.shape = {max_vals.shape}")
+
+        
+        #check that every pixel has only one active alpha mask
+        #assert torch.sum(multires_flow["alpha mask"], dim=1).max() <= 1.0001, "More than one alpha mask is active 2"
+        
         
         return {"flow": flow_list, "activity": activity} 
 
@@ -180,7 +225,7 @@ class EVFlowNet(BaseModel):
         unet_kwargs.pop("norm_input", None)
         unet_kwargs.pop("spiking_neuron", None)
 
-        self.multires_unet = MultiResUNet(unet_kwargs)  # NETWORK ARCHITECTURE 
+        self.multires_unet = MultiResUNet(unet_kwargs) 
 
     def detach_states(self):
         pass
@@ -222,7 +267,7 @@ class EVFlowNet(BaseModel):
             x = self.crop.pad(x)
 
         # forward pass
-        multires_flow = self.multires_unet.forward(x)      # OUTPUT
+        multires_flow = self.multires_unet.forward(x) 
 
         # log activity
         if log:
@@ -249,5 +294,13 @@ class EVFlowNet(BaseModel):
                 flow_list[i] = flow[:, :, self.crop.iy0 : self.crop.iy1, self.crop.ix0 : self.crop.ix1]
                 flow_list[i] = flow_list[i].contiguous()
 
-        return {"flow": flow_list, "activity": activity} # OUTPUT flow_lists
+        return {"flow": flow_list, "activity": activity} 
+
+
+
+
+
+
+
+
 

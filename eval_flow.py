@@ -9,29 +9,29 @@ from configs.parser import YAMLParser
 from dataloader.h5 import H5Loader
 from loss.flow import FWL, RSAT, AEE
 from models.model import (
-    FireNet,
-    RNNFireNet,
-    LeakyFireNet,
-    FireFlowNet,
-    LeakyFireFlowNet,
-    E2VID,
+    #FireNet,
+    #RNNFireNet,
+    #LeakyFireNet,
+    #FireFlowNet,
+    #LeakyFireFlowNet,
+    #E2VID,
     EVFlowNet,
     EVFlowNet_Segmentation,
-    RecEVFlowNet,
-    LeakyRecEVFlowNet,
-    RNNRecEVFlowNet,
+    #RecEVFlowNet,
+    #LeakyRecEVFlowNet,
+    #RNNRecEVFlowNet,
 )
-from models.model import (
-    LIFFireNet,
-    PLIFFireNet,
-    ALIFFireNet,
-    XLIFFireNet,
-    LIFFireFlowNet,
-    SpikingRecEVFlowNet,
-    PLIFRecEVFlowNet,
-    ALIFRecEVFlowNet,
-    XLIFRecEVFlowNet,
-)
+#from models.model import (
+    #LIFFireNet,
+    #PLIFFireNet,
+    #ALIFFireNet,
+    #XLIFFireNet,
+    #LIFFireFlowNet,
+    #SpikingRecEVFlowNet,
+    #PLIFRecEVFlowNet,
+    #ALIFRecEVFlowNet,
+    #XLIFRecEVFlowNet,
+#)
 from utils.iwe import compute_pol_iwe
 from utils.utils import load_model, create_model_dir
 from utils.mlflow import log_config, log_results
@@ -43,7 +43,7 @@ def test(args, config_parser):
 
     run = mlflow.get_run(args.runid)
     config = config_parser.merge_configs(run.data.params)
-    """
+    
     # configs
     if config["loader"]["batch_size"] > 1:
         config["vis"]["enabled"] = False
@@ -70,14 +70,14 @@ def test(args, config_parser):
         else:
             assert np.isclose(
                 config["data"]["window"] % 1.0, 0.0
-            ), "Frames mode not compatible with > 1 fractional windows" """
+            ), "Frames mode not compatible with > 1 fractional windows" 
 
-    if not args.debug:
+    if  args.debug:
         # create directory for inference results
         path_results = create_model_dir(args.path_results, args.runid)
 
         # store validation settings
-        eval_id = log_config(path_results, args.runid, config)
+        eval_id = log_config(path_results, args.runid, config)     
     else:
         path_results = None
         eval_id = -1
@@ -130,20 +130,21 @@ def test(args, config_parser):
                 if data.seq_num >= len(data.files):
                     end_test = True
                     break
-                """
+                
                 # forward pass
                 x = model(
                     inputs["event_voxel"].to(device), inputs["event_cnt"].to(device), log=config["vis"]["activity"]
                 )
 
                 # mask flow for visualization
-                flow_vis = x["flow"][-1].clone()
+                flow_vis = x["flow"].clone() #x["flow"][-1].clone()
+                alpha_masks = x["alpha_masks"]
                 if model.mask:
                     flow_vis *= inputs["event_mask"].to(device)
 
                 # image of warped events
                 iwe = compute_pol_iwe(
-                    x["flow"][-1],
+                    x["flow"], # "x["flow"][-1],
                     inputs["event_list"].to(device),
                     config["loader"]["resolution"],
                     inputs["event_list_pol_mask"][:, :, 0:1].to(device),
@@ -160,11 +161,11 @@ def test(args, config_parser):
                     # event flow association
                     for metric in criteria:
                         metric.event_flow_association(x["flow"], inputs)
-
+                        
                     # validation
                     for i, metric in enumerate(config["metrics"]["name"]):
                         if criteria[i].num_events >= config["data"]["window_eval"]:
-
+                            """
                             # overwrite intermedia flow estimates with the final ones
                             if config["loss"]["overwrite_intermediate"]:
                                 criteria[i].overwrite_intermediate_flow(x["flow"])
@@ -198,7 +199,7 @@ def test(args, config_parser):
                                     val_results[filename][metric]["percent"] += val_metric[1][batch].cpu().numpy()
                                 else:
                                     val_results[filename][metric]["metric"] += val_metric[batch].cpu().numpy()
-
+                            """
                             # visualize
                             if (
                                 i == 0
@@ -212,14 +213,15 @@ def test(args, config_parser):
 
                             # reset criteria
                             criteria[i].reset()
-                """
-                # visualize
+                
+                # visualize   
+                # this need to be changed such that we see input events, and output flow, mask, and IWE
                 if config["vis"]["bars"]:
                     for bar in data.open_files_bar:
                         bar.next()
                 if config["vis"]["enabled"]:
-                    vis.update(inputs, None, None)# flow_vis, iwe, ev  events_window_vis, masked_window_flow_vis, iwe_window_vis)
-                """if config["vis"]["store"]:
+                    vis.update(inputs, flow_vis, alpha_masks, iwe, events_window_vis, masked_window_flow_vis, iwe_window_vis)
+                if config["vis"]["store"]:
                     sequence = data.files[data.batch_idx[0] % len(data.files)].split("/")[-1].split(".")[0]
                     vis.store(
                         inputs,
@@ -230,11 +232,11 @@ def test(args, config_parser):
                         masked_window_flow_vis,
                         iwe_window_vis,
                         ts=data.last_proc_timestamp,
-                    )"""
+                    )
 
-                """# visualize activity
+                # visualize activity
                 if config["vis"]["activity"]:
-                    activity_log = vis_activity(x["activity"], activity_log)"""
+                    activity_log = vis_activity(x["activity"], activity_log)
 
             if end_test:
                 break

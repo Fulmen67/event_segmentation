@@ -47,15 +47,19 @@ if __name__ == "__main__":
     The resulting training sequences contain the raw images if available.
     """
     parser = argparse.ArgumentParser()
-    parser.add_argument("path", help="directory of datasets to be used")
+    parser.add_argument(
+        "--path",
+        default="/data/youssef/datasets/evimo_2_h5/training_to_be_cropped/",
+        help="directory of datasets to be used",
+    )
     parser.add_argument(
         "--output_dir",
-        default="/tmp/training/",
+        default="/data/youssef/datasets/evimo_2_h5/training_cropped/",
         help="output directory containing the resulting training sequences",
     )
     parser.add_argument(
         "--mode",
-        default="time",
+        default="events",
         help="splits sequences based on: events/time",
     )
     parser.add_argument(
@@ -65,7 +69,7 @@ if __name__ == "__main__":
         type=int,
     )
     parser.add_argument("--output_res", default=(240, 240))
-    parser.add_argument("--random_crop", default=True)
+    parser.add_argument("--random_crop", default=False)
     parser.add_argument("--original_res", default=(480, 640))
     args = parser.parse_args()
 

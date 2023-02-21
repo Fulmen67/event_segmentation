@@ -11,7 +11,7 @@ from h5_packager import H5Packager
 import pandas as pd
 
 # TODO: add option to remove hot pixels already in the preprocessing stage
-def process(path, args, original_res=(480, 640)):
+def process(path, args, original_res=(480, 640), crop = False):
     folders, filename = os.path.split(path)
 
     # open original file, create new file
@@ -39,14 +39,41 @@ def process(path, args, original_res=(480, 640)):
 
         # event timestamps
         timestamp = events[:, 0]
-        if t0 == -1:
-            t0 = timestamp[0]
-        last_timestamp = timestamp[-1]
 
         # event pixel location and polarity
         x = events[:, 1].astype(np.int16)
         y = events[:, 2].astype(np.int16)
         p = events[:, 3].astype(np.bool_)
+        
+        
+        if crop:
+            # Define the original and output resolutions
+            original_res = (480, 640)
+            output_res = (240, 240)
+
+            # Assert that the output resolution is not larger than the original resolution
+            assert (output_res[0] <= original_res[0]) and (output_res[1] <= original_res[1])
+
+            # Calculate the crop values to take the center of the events
+            crop = ((original_res[0] - output_res[0]) // 2, (original_res[1] - output_res[1]) // 2)
+
+            # Create a boolean mask for the events within the crop area
+            cropped_mask = np.logical_and(x >= crop[0], x < crop[0]+output_res[0]) & np.logical_and(y >= crop[1], y < crop[1]+output_res[1])
+
+            # Get the cropped events with the mask
+            cropped_x = x[cropped_mask]
+            cropped_y = y[cropped_mask]
+            cropped_p = p[cropped_mask]
+            cropped_timestamps = timestamp[cropped_mask]
+            
+            timestamp = cropped_timestamps
+            x = cropped_x
+            y = cropped_y
+            p = cropped_p
+        
+        if t0 == -1:
+            t0 = timestamp[0]
+        last_timestamp = timestamp[-1]
 
         # package events and update statistics
         ep.package_events(x, y, timestamp, p)
@@ -77,7 +104,7 @@ if __name__ == "__main__":
     """
     parser = argparse.ArgumentParser()
     parser.add_argument("--path", default="/data/youssef/datasets/evimo_2/")
-    parser.add_argument("--output_dir", default="/data/youssef/datasets/evimo_2_h5/training/")
+    parser.add_argument("--output_dir", default="/data/youssef/datasets/evimo_2_h5/eval/")
     args = parser.parse_args()
 
     # get files to process
@@ -85,7 +112,7 @@ if __name__ == "__main__":
     for root, dirs, files in os.walk(args.path):
         for file in files:
             # skip eval folders
-            if "eval" in root:
+            if "train" in root:
                 continue
             if file.endswith("events.txt"):
                 paths.append(os.path.join(root, file))

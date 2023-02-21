@@ -1,14 +1,14 @@
 data:
-    path: /data/youssef/datasets/evimo_2_h5/training
+    path: /data/youssef/datasets/evimo_2_h5/eval_cropped_240x240
     mode: gtflow_dt1 # gtflow_dt1/gtflow_dt4
-    window: 1 # 1 for dt1, 0.25 for dt4
-    window_eval: 15000 # not used
+    window: 50000 # 1 for dt1, 0.25 for dt4
+    window_eval: 50000 # not used
 
 model:
     mask_output: True
 
 metrics:
-    name: [AEE]  # FWL, RSAT, AEE
+    name: [RSAT]  # FWL, RSAT, AEE
     flow_scaling: 128
 
 loader:

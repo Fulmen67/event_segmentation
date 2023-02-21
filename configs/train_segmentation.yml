@@ -1,17 +1,17 @@
 experiment: Default
 
 data:
-    path: /data/youssef/datasets/evimo_2_h5/training/
+    path: /data/youssef/datasets/evimo_2_h5/training
     mode: events # events/time
-    window: 1000 # events/time
-    window_loss: 1000 # events
+    window: 100000 # events/time
+    window_loss: 100000 # events
 
 model:
     name: EVFlowNet_Segmentation # EVFlowNet/*FireFlowNet/*FireNet/E2VID/RecEVFlowNet
     encoding: cnt # voxel/cnt
     round_encoding: False # for voxel encoding
     norm_input: False # normalize input
-    num_bins: 2
+    num_bins: 2 #2 
     base_num_channels: 32
     kernel_size: 3
     activations: [relu, Null] # activations for ff and rec neurons

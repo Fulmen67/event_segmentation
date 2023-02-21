@@ -1,5 +1,4 @@
-import argparse
-import logging
+import argparse, logging
 
 import mlflow
 import torch
@@ -15,8 +14,7 @@ from models.model import (
     #FireFlowNet,
     #LeakyFireFlowNet,
     #E2VID,
-    EVFlowNet,
-    EVFlowNet_Segmentation#,
+    EVFlowNet, EVFlowNet_Segmentation#,
     #RecEVFlowNet,
     #LeakyRecEVFlowNet,
     #RNNRecEVFlowNet,
@@ -35,7 +33,6 @@ from models.model import (
 from utils.gradients import get_grads
 from utils.utils import load_model, save_csv, save_diff, save_model
 from utils.visualization import Visualization
-
 
 
 def train(args, config_parser):
@@ -95,21 +92,11 @@ def train(args, config_parser):
     end_train = False
     grads_w = []
     
-    logging.basicConfig(filename='debug.log', level=logging.DEBUG)
     # training loop
     data.shuffle()
-    i = 1
     while True:
         for inputs in dataloader:
-            
-            if torch.isnan(inputs["event_list"].to(device)).any():
-                #logging.debug("Found Nan in inputs['event_list'] for the %d time", i)
-                #i += 1
-                continue
-                        
-            #logging.debug("shape of inputs['event_cnt']: %s", inputs["event_cnt"].shape)
-            #logging.debug("inputs['event_cnt'] min: %s", inputs["event_cnt"].min())
-            #logging.debug("inputs['event_cnt'] max %s", inputs["event_cnt"].max())
+        
             if data.new_seq:
                 data.new_seq = False
 
@@ -152,11 +139,11 @@ def train(args, config_parser):
 
             # backward pass
             if loss_function.num_events >= config["data"]["window_loss"]:
-                '''
+                
                 # overwrite intermediate flow estimates with the final ones
                 if config["loss"]["overwrite_intermediate"]:
-                    loss_function.overwrite_intermediate_flow(x["flow"])
-                '''
+                    loss_function.overwrite_intermediate_flow(x["flow"]) 
+                           
                 # loss
                 loss = loss_function()    
                 train_loss += loss.item()
@@ -165,14 +152,7 @@ def train(args, config_parser):
                 data.samples += config["loader"]["batch_size"]
 
                 loss.backward()
-                for name, param in model.named_parameters():
-                    if torch.isnan(param.data).any() or torch.isinf(param.data).any():
-                        print(name, "contains NaN or Inf values")
-                    if param.grad is not None:
-                        if torch.isnan(param.grad).any() or torch.isinf(param.grad).any():
-                            print(name, "gradients contain NaN or Inf values")
-
-
+            
                 # clip and save grads
                 if config["loss"]["clip_grad"] is not None:
                     torch.nn.utils.clip_grad.clip_grad_norm_(model.parameters(), config["loss"]["clip_grad"])

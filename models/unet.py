@@ -4,6 +4,7 @@ Adapted from UZH-RPG https://github.com/uzh-rpg/rpg_e2vid
 
 import torch
 import torch.nn as nn
+import logging
 
 from .model_util import *
 from .submodules import (
@@ -325,12 +326,17 @@ class MultiResUNet_Segmentation(BaseUNet):
         
         # apply sigmoid to restrict values to [0,1]
         sigmoid = nn.Sigmoid()
-        x_seg = sigmoid(x_seg)
+        x_seg = sigmoid(x_seg)   # [8 x 5 x 480 x 640]
+        
+        #print(x_seg)
         
         # apply softmax 
         softmax = nn.Softmax(dim=1)
         x_seg = softmax(x_seg)
-         
+        
+        #print(x_seg)
+        
+        assert torch.sum(x_seg, dim=1).max() > 0.9999 and torch.sum(x_seg, dim=1).max() <= 1.0001, "Pixel probabilities do not sum to 1"
         return {'alpha mask': x_seg,'motion models': x_flow}
         
 class MultiResUNet(BaseUNet):
