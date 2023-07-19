@@ -1,5 +1,6 @@
 # EV-LayerSegNet: Self-supervised Motion Segmentation using Event Cameras
 
+Scientific Paper: [here](https://drive.google.com/file/d/1DzfJf9MdrnNPFfW4VKw7VO4M3yNSfLif/view?usp=drive_link).
 
 If you use this code, please cite our work:
 
@@ -14,7 +15,7 @@ If you use this code, please cite our work:
 This code allows for the reproduction of the experiments leading to the results in Section 5.
 
 <!-- &nbsp; -->
-<img src=".readme/Cover_Page_Better.png"  />
+<img src=".readme/cover.png"  />
 <!-- &nbsp; -->
 
 #
@@ -61,11 +62,21 @@ pip install -r requirements.txt
 
 ### Download datasets
 
-In this work, we use multiple datasets:
-- 
+In this work, we use our dataset generated with ESIM:
+- `event_segmentation/datasets/AffineObjects`: [AffineObjects Datasets](https://drive.google.com/file/d/1MH-KOxXU2LM5bE_mknPszNRjoijEVRhj/view?usp=sharing)
 
 
-In this project we use [MLflow](https://www.mlflow.org/docs/latest/index.html#) to keep track of the experiments. To visualize the models that are available, alongside other useful details and evaluation metrics, run the following from the home directory of the project:
+These datasets can be downloaded in the expected HDF5 data format and they should be placed in `event_segmentation/datasets/` (as shown above). 
+
+Download size: 2.4 GB. Uncompressed size: 3.6 GB.
+
+Details about the structure of these files can be found in `event_segmentation/datasets/tools/`. 
+
+### Download models
+
+The pretrained models can be downloaded from [here](https://drive.google.com/file/d/1e2qcmpkNTpfGv4ujbE47pk-aD6sQ7Oo6/view?usp=sharing), and are expected at `event_segmentation/mlruns/`. 
+
+In this project we use [MLflow](https://www.mlflow.org/docs/latest/index.html#) to keep track of the experiments. To visualize the models that are available, alongside other useful details, run the following from the home directory of the project:
 
 ```
 mlflow ui
@@ -73,27 +84,25 @@ mlflow ui
 
 and access [http://127.0.0.1:5000](http://127.0.0.1:5000) from your browser of choice.
 
-## Inference
+## Test
 
-To perform motion segmentation from event sequences from the dataset, run:
+To test EV-LayerSegNet on the test subset of AffineObjects, run:
 
 ```
-python eval_flow.py <model_name> --config configs/eval_MVSEC.yml
-
-# for example:
-python eval_flow.py LIFFireNet --config configs/eval_MVSEC.yml
+python eval_flow.py <runid> --config configs/eval.yml
 ```
 
-Results from these evaluations are stored as MLflow artifacts. 
+where `<model_name>` is the name of MLflow run to be evaluated. Note that, if a run does not have a name (this would be the case for your own trained models), you can test it through its run ID (also visible through MLflow).
 
-In `configs/`, you can find the configuration files associated to these scripts and vary the inference settings (e.g., number of input events, activate/deactivate visualization).
+
+In `configs/`, you can find the configuration files associated to these scripts and vary the test settings (e.g., number of input events, activate/deactivate visualization).
 
 ## Training
 
 Run:
 
 ```
-python train_flow.py --config configs/train_ANN.yml
+python train_flow.py --config configs/train.yml
 ```
  
 
