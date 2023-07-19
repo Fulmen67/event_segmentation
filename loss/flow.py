@@ -1,12 +1,14 @@
+"""
+Adapted from TUDelft-MAVLab https://github.com/tudelft/event_flow
+"""
+
 import os
 import sys
 
 import numpy as np
 import torch
-import logging
 
-parent_dir_name = os.path.dirname(os.path.dirname(os.path.realpath(__file__)))
-sys.path.append(parent_dir_name)
+
 
 from utils.iwe import purge_unfeasible, get_interpolation, interpolate
 
@@ -196,26 +198,7 @@ class EventWarping(torch.nn.Module):
             fw_idx, fw_weights = get_interpolation(
                 self._event_list, self._flow_list[i], tref, self.res, self.flow_scaling
             )
-            # if event_list contains nan values, save event_list in logging debug
-            """if torch.isnan(self._event_list).any():
-                with open("event_list_nan.txt", "w") as f:
-                    for event in self._event_list:
-                        f.write(str(event) + "\n")
-            logging.debug("event list shape: %s", self._event_list.shape)
-            logging.debug("event list min: %s", torch.min(self._event_list))
-            logging.debug("event list max: %s", torch.max(self._event_list))
-            logging.debug("flow list shape: %s", self._flow_list[i].shape)
-            logging.debug("flow list min: %s", torch.min(self._flow_list[i]))
-            logging.debug("flow list max: %s", torch.max(self._flow_list[i]))
-            logging.debug("idx shape: %s", fw_idx.shape)
-            logging.debug("idx min: %s", torch.min(fw_idx))
-            logging.debug("idx max: %s", torch.max(fw_idx))
-            logging.debug("weights shape: %s", fw_weights.shape)
-            logging.debug("weights min: %s", torch.min(fw_weights))
-            logging.debug("weights max: %s", torch.max(fw_weights))
-            #logging.debug("polarity mask shape: %s", pol_mask.shape)
-            #logging.debug("polarity mask min: %s", torch.min(pol_mask))
-            #logging.debug("polarity mask max: %s", torch.max(pol_mask))"""
+
 
             # per-polarity image of (forward) warped events
             fw_iwe_pos = interpolate(fw_idx.long(), fw_weights, self.res, polarity_mask=pol_mask[:, :, 0:1])
@@ -316,10 +299,9 @@ class EventWarping(torch.nn.Module):
 
         # average loss over all flow predictions
         loss /= len(self._flow_list) 
-
+        
         return loss
-
-
+    
 class BaseValidationLoss(torch.nn.Module):
     """
     Base class for validation metrics.

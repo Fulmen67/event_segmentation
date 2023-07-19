@@ -1,3 +1,6 @@
+"""
+Adapted from TUDelft-MAVLab https://github.com/tudelft/event_flow
+"""
 import argparse, logging
 
 import mlflow
@@ -8,28 +11,11 @@ from configs.parser import YAMLParser
 from dataloader.h5 import H5Loader
 from loss.flow import EventWarping
 from models.model import (
-    #FireNet,
-    #RNNFireNet,
-    #LeakyFireNet,
-    #FireFlowNet,
-    #LeakyFireFlowNet,
-    #E2VID,
-    EVFlowNet, EVFlowNet_Segmentation#,
-    #RecEVFlowNet,
-    #LeakyRecEVFlowNet,
-    #RNNRecEVFlowNet,
+    EVFlowNet, 
+    EVFlowNet_Segmentation, 
+    EVFlowSegNet
 )
-'''from models.model import (
-    LIFFireNet,
-    PLIFFireNet,
-    ALIFFireNet,
-    XLIFFireNet,
-    LIFFireFlowNet,
-    SpikingRecEVFlowNet,
-    PLIFRecEVFlowNet,
-    ALIFRecEVFlowNet,
-    XLIFRecEVFlowNet,
-)'''
+
 from utils.gradients import get_grads
 from utils.utils import load_model, save_csv, save_diff, save_model
 from utils.visualization import Visualization

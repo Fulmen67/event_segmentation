@@ -1,7 +1,3 @@
-"""
-Adapted from TUDelft-MAVLab https://github.com/tudelft/event_flow
-"""
-
 import argparse
 import os
 
@@ -10,17 +6,17 @@ import hdf5plugin
 import h5py
 import numpy as np
 import yaml
+import rosbag
 
 from h5_packager import H5Packager
-
+import pandas as pd
 
 # TODO: add option to remove hot pixels already in the preprocessing stage
-def process(path, args, original_res=(180, 240)):
-    _, filename = os.path.split(path)
-
-    # open original file, create new file
+def process(path, args, original_res=(480, 640)):
+    
+    folders, filename = os.path.split(path)
+    folders = folders.split("/")
     ep = H5Packager(args.output_dir + filename.split(".")[0] + ".h5")
-
     t0 = -1
     idx = 0
     sensor_size = None
@@ -30,9 +26,32 @@ def process(path, args, original_res=(180, 240)):
     print("Processing events...")
     skip = 1
     while True:
+        # Open the bag file
+        bag = rosbag.Bag(path)
+        
+        # Get the event messages from the bag file
+        events = bag.read_messages(topics='/cam0/events')
 
-        # read events
-        events = np.loadtxt(path, dtype=np.float64, delimiter=" ", skiprows=skip, max_rows=max_events)
+        # Convert the messages to a list of dictionaries
+        event_list = []
+        for msg in events:
+            for event in msg.message.events:
+                event_dict = {
+                    'ts': msg.timestamp.to_nsec(),
+                    'x': event.x,
+                    'y': event.y,
+                    'p': 0 if event.polarity == False else 1
+                }
+                event_list.append(event_dict)
+        
+        # Create a DataFrame object from the list of dictionaries
+        df = pd.DataFrame(event_list)
+
+        # Save the event messages to a CSV file
+        path_txt = args.output_dir + filename.split(".")[0] + ".txt"
+        df.to_csv(path_txt, index=False, header=False, sep=' ')
+
+        events = np.loadtxt(path_txt, dtype=np.float64, delimiter=" ", skiprows=skip, max_rows=max_events)
         if events.shape[0] == 0:
             break
         skip += events.shape[0]
@@ -66,30 +85,32 @@ def process(path, args, original_res=(180, 240)):
         last_timestamp,
         0,
         0,
-        sensor_size,
-        [(-1, -1), (-1, -1)],
     )
+
+    # delete txt file
+    os.remove(path_txt)
 
 
 if __name__ == "__main__":
     """
-    Tool for converting UZH-FPV Drone Racing Dataset.
+    Tool for converting EVIMO2 Dataset.
     """
     parser = argparse.ArgumentParser()
-    parser.add_argument("path")
-    parser.add_argument("--output_dir", default="/tmp/extracted_data")
+    parser.add_argument("--path", default="/Users/youssef/Desktop/MSc/Thesis-Code/datasets/ESIM/eval/oneobject/combinations/")
+    parser.add_argument("--output_dir", default="/Users/youssef/Desktop/MSc/Thesis-Code/datasets/ESIM_h5/eval/oneobject/combinations/")
     args = parser.parse_args()
 
     # get files to process
     paths = []
     for root, dirs, files in os.walk(args.path):
         for file in files:
-            if file.endswith(".txt"):
+            if file.endswith(".bag"):
                 paths.append(os.path.join(root, file))
-
+    
     # make sure output directory exists
     if not os.path.isdir(args.output_dir):
         os.makedirs(args.output_dir)
 
+    # process files
     for path in paths:
         process(path, args)

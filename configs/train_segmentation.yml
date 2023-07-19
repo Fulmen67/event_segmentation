@@ -1,17 +1,17 @@
 experiment: Default
 
 data:
-    path: /data/youssef/datasets/evimo_2_h5/training
+    path: /data/youssef/datasets/ESIM_h5/oneobject/
     mode: events # events/time
-    window: 100000 # events/time
-    window_loss: 100000 # events
+    window: 200000 # events/time
+    window_loss: 200000 # events
 
 model:
     name: EVFlowNet_Segmentation # EVFlowNet/*FireFlowNet/*FireNet/E2VID/RecEVFlowNet
-    encoding: cnt # voxel/cnt
+    encoding: voxel # voxel/cnt
     round_encoding: False # for voxel encoding
     norm_input: False # normalize input
-    num_bins: 2 #2 
+    num_bins: 5
     base_num_channels: 32
     kernel_size: 3
     activations: [relu, Null] # activations for ff and rec neurons
@@ -26,12 +26,12 @@ loss:
 
 optimizer:
     name: Adam
-    lr: 0.0002
+    lr: 0.00001
 
 loader:
-    n_epochs: 100
-    batch_size: 8 #8
-    resolution: [480, 640] # H x W
+    n_epochs: 5000
+    batch_size: 8
+    resolution: [480, 640] 
     augment: ["Horizontal", "Vertical", "Polarity"]
     augment_prob: [0.5, 0.5, 0.5]
     gpu: 0

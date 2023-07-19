@@ -1,3 +1,6 @@
+"""
+Adapted from TUDelft-MAVLab https://github.com/tudelft/event_flow
+"""
 import argparse
 import os
 

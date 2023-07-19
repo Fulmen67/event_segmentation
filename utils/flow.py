@@ -1,5 +1,5 @@
 import torch
-from tqdm import tqdm
+
 
 def get_optical_flow(A, flow_list, coords):
     """
@@ -32,17 +32,3 @@ def get_optical_flow_old(A, flow_list):
                     flow_list[b,n,h,w,1] = u_y     
             
     return flow_list
-
-
-    
-#coord tensor
-        #H, W = config["loader"]["resolution"]
-        #B = config["loader"]["batch_size"]
-        #coords= torch.empty(3,H,W).to(device)
-        #coords[0] = 1
-        #coords[1] = torch.arange(H).view(H, 1).repeat(1, W)
-        #coords[2] = torch.arange(W).view(1, W).repeat(H, 1)
-        
-        #flow list
-        #flow_list = torch.empty(B,5,2, H, W).to(device)
-        #flow_list = get_optical_flow(motion_models, alpha_masks, coords)

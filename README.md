@@ -1,23 +1,20 @@
-# Self-Supervised Learning of Event-based Optical Flow with Spiking Neural Networks
+# EV-LayerSegNet: Self-supervised Motion Segmentation using Event Cameras
 
-Work accepted at NeurIPS'21 [[paper](https://proceedings.neurips.cc/paper/2021/hash/39d4b545fb02556829aab1db805021c3-Abstract.html), [video](https://www.youtube.com/watch?v=T7-9GGYnuZ4&ab_channel=MAVLabTUDelft)].
 
-If you use this code in an academic context, please cite our work:
+If you use this code, please cite our work:
 
 ```bibtex
-@article{hagenaarsparedesvalles2021ssl,
-  title={Self-Supervised Learning of Event-Based Optical Flow with Spiking Neural Networks},
-  author={Hagenaars, Jesse and Paredes-Vall\'es, Federico and de Croon, Guido},
-  journal={Advances in Neural Information Processing Systems},
-  volume={34},
-  year={2021}
+@unpublished{farahparedesetal2023,
+  title={EV-LayerSegNet: Self-supervised Motion Segmentation using Event Cameras},
+  author={Farah, Youssef and Paredes-Vall\'es, Federico and de Croon, Guido},
+  year={2023}
 }
 ```
 
-This code allows for the reproduction of the experiments leading to the results in Section 4.1.
+This code allows for the reproduction of the experiments leading to the results in Section 5.
 
 <!-- &nbsp; -->
-<img src=".readme/flow.gif" width="880" height="220" />
+<img src=".readme/Cover_Page_Better.png"  />
 <!-- &nbsp; -->
 
 #

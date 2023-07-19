@@ -1,4 +1,8 @@
-import argparse
+"""
+Adapted from TUDelft-MAVLab https://github.com/tudelft/event_flow
+"""
+
+import argparse, csv
 
 import mlflow
 import numpy as np
@@ -7,31 +11,14 @@ from torch.optim import *
 
 from configs.parser import YAMLParser
 from dataloader.h5 import H5Loader
-from loss.flow import FWL, RSAT, AEE
+from loss.flow import FWL, RSAT, AEE, EventWarping
 from models.model import (
-    #FireNet,
-    #RNNFireNet,
-    #LeakyFireNet,
-    #FireFlowNet,
-    #LeakyFireFlowNet,
-    #E2VID,
     EVFlowNet,
+    EVFlowSegNet,
     EVFlowNet_Segmentation,
-    #RecEVFlowNet,
-    #LeakyRecEVFlowNet,
-    #RNNRecEVFlowNet,
+    
 )
-#from models.model import (
-    #LIFFireNet,
-    #PLIFFireNet,
-    #ALIFFireNet,
-    #XLIFFireNet,
-    #LIFFireFlowNet,
-    #SpikingRecEVFlowNet,
-    #PLIFRecEVFlowNet,
-    #ALIFRecEVFlowNet,
-    #XLIFRecEVFlowNet,
-#)
+
 from utils.iwe import compute_pol_iwe
 from utils.utils import load_model, create_model_dir
 from utils.mlflow import log_config, log_results
@@ -43,7 +30,7 @@ def test(args, config_parser):
 
     run = mlflow.get_run(args.runid)
     config = config_parser.merge_configs(run.data.params)
-    
+
     # configs
     if config["loader"]["batch_size"] > 1:
         config["vis"]["enabled"] = False
@@ -70,14 +57,14 @@ def test(args, config_parser):
         else:
             assert np.isclose(
                 config["data"]["window"] % 1.0, 0.0
-            ), "Frames mode not compatible with > 1 fractional windows" 
+            ), "Frames mode not compatible with > 1 fractional windows"
 
-    if  args.debug:
+    if not args.debug:
         # create directory for inference results
         path_results = create_model_dir(args.path_results, args.runid)
 
         # store validation settings
-        eval_id = log_config(path_results, args.runid, config)     
+        eval_id = log_config(path_results, args.runid, config)
     else:
         path_results = None
         eval_id = -1
@@ -112,15 +99,18 @@ def test(args, config_parser):
         **kwargs,
     )
 
+    loss_function = EventWarping(config, device, flow_scaling=config["metrics"]["flow_scaling"])
+    save = False
     # inference loop
     idx_AEE = 0
     val_results = {}
     end_test = False
     activity_log = None
+    loss_list = []
     with torch.no_grad():
         while True:
             for inputs in dataloader:
-                
+
                 if data.new_seq:
                     data.new_seq = False
                     activity_log = None
@@ -130,21 +120,24 @@ def test(args, config_parser):
                 if data.seq_num >= len(data.files):
                     end_test = True
                     break
-                
+
                 # forward pass
                 x = model(
                     inputs["event_voxel"].to(device), inputs["event_cnt"].to(device), log=config["vis"]["activity"]
                 )
 
                 # mask flow for visualization
-                flow_vis = x["flow"].clone() #x["flow"][-1].clone()
-                alpha_masks = x["alpha_masks"]
+                flow_vis = x["flow"].clone(); 
+                alpha_masks = x["alpha_masks"] if x["alpha_masks"] is not None else None
+                flow_total = x["flow_total"].clone() if x["flow_total"] is not None else None
                 if model.mask:
                     flow_vis *= inputs["event_mask"].to(device)
+                    alpha_masks *= inputs["event_mask"].to(device) if alpha_masks is not None else None
+                    flow_total *= inputs["event_mask"].to(device) if flow_total is not None else None
 
                 # image of warped events
                 iwe = compute_pol_iwe(
-                    x["flow"], # "x["flow"][-1],
+                    x["flow"],
                     inputs["event_list"].to(device),
                     config["loader"]["resolution"],
                     inputs["event_list_pol_mask"][:, :, 0:1].to(device),
@@ -152,20 +145,21 @@ def test(args, config_parser):
                     flow_scaling=config["metrics"]["flow_scaling"],
                     round_idx=True,
                 )
-
+                
+                """
                 iwe_window_vis = None
                 events_window_vis = None
                 masked_window_flow_vis = None
                 if "metrics" in config.keys():
 
                     # event flow association
-                    for metric in criteria:
-                        metric.event_flow_association(x["flow"], inputs)
+                    #for metric in criteria:
+                        #metric.event_flow_association(x["flow"], inputs)
                         
                     # validation
                     for i, metric in enumerate(config["metrics"]["name"]):
                         if criteria[i].num_events >= config["data"]["window_eval"]:
-                            """
+                            
                             # overwrite intermedia flow estimates with the final ones
                             if config["loss"]["overwrite_intermediate"]:
                                 criteria[i].overwrite_intermediate_flow(x["flow"])
@@ -199,7 +193,7 @@ def test(args, config_parser):
                                     val_results[filename][metric]["percent"] += val_metric[1][batch].cpu().numpy()
                                 else:
                                     val_results[filename][metric]["metric"] += val_metric[batch].cpu().numpy()
-                            """
+
                             # visualize
                             if (
                                 i == 0
@@ -212,16 +206,15 @@ def test(args, config_parser):
                                 masked_window_flow_vis = criteria[i].compute_masked_window_flow()
 
                             # reset criteria
-                            criteria[i].reset()
-                
-                # visualize   
-                # this need to be changed such that we see input events, and output flow, mask, and IWE
+                            criteria[i].reset()"""
+
+                # visualize
                 if config["vis"]["bars"]:
                     for bar in data.open_files_bar:
                         bar.next()
                 if config["vis"]["enabled"]:
-                    vis.update(inputs, flow_vis, alpha_masks, iwe, events_window_vis, masked_window_flow_vis, iwe_window_vis)
-                if config["vis"]["store"]:
+                    vis.update(inputs, flow_vis, alpha_masks, flow_total, iwe)
+                """if config["vis"]["store"]:
                     sequence = data.files[data.batch_idx[0] % len(data.files)].split("/")[-1].split(".")[0]
                     vis.store(
                         inputs,
@@ -232,7 +225,7 @@ def test(args, config_parser):
                         masked_window_flow_vis,
                         iwe_window_vis,
                         ts=data.last_proc_timestamp,
-                    )
+                    )"""
 
                 # visualize activity
                 if config["vis"]["activity"]:
@@ -246,7 +239,7 @@ def test(args, config_parser):
             bar.finish()
 
     # store validation config and results
-    results = {}
+    """results = {}
     if not args.debug and "metrics" in config.keys():
         for metric in config["metrics"]["name"]:
             results[metric] = {}
@@ -258,7 +251,7 @@ def test(args, config_parser):
                     results[metric + "_percent"][key] = str(
                         val_results[key][metric]["percent"] / val_results[key][metric]["it"]
                     )
-            log_results(args.runid, results, path_results, eval_id)
+            log_results(args.runid, results, path_results, eval_id)"""
 
 
 if __name__ == "__main__":

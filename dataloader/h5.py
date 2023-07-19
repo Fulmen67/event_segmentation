@@ -57,7 +57,7 @@ class H5Loader(BaseDataLoader):
         self.files = []
         for root, dirs, files in os.walk(config["data"]["path"]):
             for file in files:
-                if file.endswith(".h5") and "ll" not in file:
+                if file.endswith(".h5"):
                     self.files.append(os.path.join(root, file))
 
         # open first files
