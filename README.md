@@ -1,5 +1,6 @@
 # EV-LayerSegNet: Self-supervised Motion Segmentation using Event Cameras
 
+Repository inspired from [event_flow](https://github.com/tudelft/event_flow)
 Scientific Paper: [here](https://drive.google.com/file/d/1DzfJf9MdrnNPFfW4VKw7VO4M3yNSfLif/view?usp=drive_link).
 
 If you use this code, please cite our work:
