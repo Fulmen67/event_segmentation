@@ -1,6 +1,7 @@
 dataset/
 results_inference/
 trained_models/
+test_results/
 __pycache__/
 mlruns/
 .vscode/
