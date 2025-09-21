@@ -1,0 +1,26 @@
+Sequence Name,Mean IoU (leakyrelu),Mean DR (leakyrelu),Window
+echo_plane_combinations,0.118,0.000,50000
+april_tag_bird_combinations,0.279,0.000,50000
+brick_dji_combinations,0.014,0.000,50000
+carpet2_drone_combinations,0.377,0.000,50000
+carpet2_plane_combinations,0.109,0.000,50000
+april_tag_drone_combinations,0.024,0.000,50000
+echo_bird_combinations,0.105,0.000,50000
+city_helicopter_combinations,0.451,0.609,50000
+city_drone_combinations,0.304,0.000,50000
+echo_helicopter_combinations,0.204,0.000,50000
+carpet2_dji_combinations,0.484,0.783,50000
+april_tag_dji_combinations,0.321,0.000,50000
+echo_dji_combinations,0.135,0.000,50000
+carpet2_bird_combinations,0.307,0.000,50000
+brick_plane_combinations,0.332,0.000,50000
+city_dji_combinations,0.154,0.000,50000
+brick_bird_combinations,0.159,0.000,50000
+brick_helicopter_combinations,0.336,0.077,50000
+carpet2_helicopter_combinations,0.479,0.615,50000
+city_plane_combinations,0.483,0.654,50000
+april_tag_plane_combinations,0.108,0.000,50000
+city_bird_combinations,0.068,0.000,50000
+april_tag_helicopter_combinations,0.099,0.000,50000
+brick_drone_combinations,0.061,0.000,50000
+echo_drone_combinations,0.191,0.000,50000

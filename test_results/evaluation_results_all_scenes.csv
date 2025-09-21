@@ -1,0 +1,180 @@
+Scene,Timestamp (s),Best Cluster,IoU,Detected
+carpet2_drone_combinations,0.151776931,2,0.22377938517179025,0
+carpet2_drone_combinations,0.328397145,2,0.30471225595420626,0
+carpet2_drone_combinations,0.353628605,1,0.2654433663176098,0
+carpet2_drone_combinations,0.277934227,1,0.21124930387971042,0
+carpet2_drone_combinations,0.202239849,2,0.18401118750728354,0
+carpet2_drone_combinations,0.076082553,1,0.36075309577963105,0
+carpet2_drone_combinations,0.530248819,2,0.025559105431309903,0
+carpet2_drone_combinations,0.404091523,1,0.26326742976066597,0
+carpet2_drone_combinations,0.479785901,2,0.12826584576525377,0
+carpet2_drone_combinations,0.378860064,2,0.33372407574391344,0
+carpet2_drone_combinations,0.101314013,1,0.3089403973509934,0
+carpet2_drone_combinations,0.126545472,1,0.37124463519313305,0
+carpet2_drone_combinations,0.429322982,1,0.27681224673570465,0
+carpet2_drone_combinations,0.17700839,2,0.21552511415525114,0
+carpet2_drone_combinations,0.303165686,2,0.1781294964028777,0
+carpet2_drone_combinations,0.050851094,1,0.36615969581749047,0
+carpet2_drone_combinations,0.000388176,2,0.32043927225045077,0
+carpet2_drone_combinations,0.454554441,2,0.19047190201729106,0
+carpet2_drone_combinations,0.50501736,2,0.042973880052531735,0
+carpet2_drone_combinations,0.252702768,1,0.2205078125,0
+carpet2_drone_combinations,0.025619635,1,0.42199878123095674,0
+carpet2_drone_combinations,0.227471309,1,0.23554771702919852,0
+
+carpet2_drone_combinations - Mean IoU,0.2477052728203297
+carpet2_drone_combinations - Detection Rate (%),0.0
+carpet2_drone_combinations - Cluster 1 Mean IoU,0.19923004104165612
+carpet2_drone_combinations - Cluster 1 Detection Rate (%),0.0
+carpet2_drone_combinations - Cluster 2 Mean IoU,0.1697534007608932
+carpet2_drone_combinations - Cluster 2 Detection Rate (%),0.0
+
+carpet2_dji_combinations,0.789032166,2,0.35144020037570445,0
+carpet2_dji_combinations,0.537856248,1,0.44548689744419284,0
+carpet2_dji_combinations,0.562977837,1,0.4701624577770629,0
+carpet2_dji_combinations,0.839316773,1,0.0059187094070815,0
+carpet2_dji_combinations,0.613218075,1,0.48243045387994143,0
+carpet2_dji_combinations,0.487614481,1,0.47865412445730826,0
+carpet2_dji_combinations,0.512736558,2,0.47465200206221,0
+carpet2_dji_combinations,0.38712877,2,0.17691791545515545,0
+carpet2_dji_combinations,0.663457992,1,0.48462519484200084,0
+carpet2_dji_combinations,0.437372256,1,0.4507171754321442,0
+carpet2_dji_combinations,0.412250151,1,0.41420118343195267,0
+carpet2_dji_combinations,0.713697332,2,0.5439211982188639,1
+carpet2_dji_combinations,0.814232641,2,0.054548971564897804,0
+carpet2_dji_combinations,0.68857795,1,0.48653222394584683,0
+carpet2_dji_combinations,0.462494043,1,0.4601738513393649,0
+carpet2_dji_combinations,0.588097109,2,0.46398432790837857,0
+carpet2_dji_combinations,0.638337723,1,0.4853179873100192,0
+carpet2_dji_combinations,0.764007038,1,0.4691114616193481,0
+carpet2_dji_combinations,0.738817572,1,0.47116627876907163,0
+
+carpet2_dji_combinations - Mean IoU,0.4036822429073971
+carpet2_dji_combinations - Detection Rate (%),5.263157894736842
+carpet2_dji_combinations - Cluster 1 Mean IoU,0.3596029189888625
+carpet2_dji_combinations - Cluster 1 Detection Rate (%),0.0
+carpet2_dji_combinations - Cluster 2 Mean IoU,0.2760801768974009
+carpet2_dji_combinations - Cluster 2 Detection Rate (%),5.263157894736842
+
+carpet2_bird_combinations,0.794645222,1,0.0,0
+carpet2_bird_combinations,0.744115585,2,0.08616519530777603,0
+carpet2_bird_combinations,0.693582684,1,0.33327863472267805,0
+carpet2_bird_combinations,0.516691646,1,0.2935345798603289,0
+carpet2_bird_combinations,0.339759212,1,0.3350616591928251,0
+carpet2_bird_combinations,0.668315314,1,0.2675984752223634,0
+carpet2_bird_combinations,0.31448044,1,0.320497803806735,0
+carpet2_bird_combinations,0.238420006,1,0.18982082575954298,0
+carpet2_bird_combinations,0.617777516,1,0.3283990345937249,0
+carpet2_bird_combinations,0.567236236,2,0.2989351912711976,0
+carpet2_bird_combinations,0.491418086,1,0.35202492211838005,0
+carpet2_bird_combinations,0.541964221,1,0.35722843450479236,0
+carpet2_bird_combinations,0.643046721,1,0.27738172391445237,0
+carpet2_bird_combinations,0.263907786,2,0.3530124653739612,0
+carpet2_bird_combinations,0.769380811,1,0.015191610310692933,0
+carpet2_bird_combinations,0.440868587,1,0.33157894736842103,0
+carpet2_bird_combinations,0.592507073,2,0.3809752967597048,0
+carpet2_bird_combinations,0.71884985,1,0.2721984078383344,0
+carpet2_bird_combinations,0.365038033,2,0.3541031227305737,0
+carpet2_bird_combinations,0.213119616,1,0.04152445961319681,0
+carpet2_bird_combinations,0.415592806,1,0.3472748469833868,0
+carpet2_bird_combinations,0.289201767,1,0.34107402031930334,0
+carpet2_bird_combinations,0.390315716,1,0.2794682422451994,0
+carpet2_bird_combinations,0.466143939,2,0.3610829593166353,0
+
+carpet2_bird_combinations - Mean IoU,0.2715587857972586
+carpet2_bird_combinations - Detection Rate (%),0.0
+carpet2_bird_combinations - Cluster 1 Mean IoU,0.25945131973253255
+carpet2_bird_combinations - Cluster 1 Detection Rate (%),0.0
+carpet2_bird_combinations - Cluster 2 Mean IoU,0.2371211453745208
+carpet2_bird_combinations - Cluster 2 Detection Rate (%),0.0
+
+echo_bird_combinations,0.539796958,2,0.25058494980753265,0
+echo_bird_combinations,0.514536209,2,0.2440052317977038,0
+echo_bird_combinations,0.312566608,2,0.283587786259542,0
+echo_bird_combinations,0.212070411,2,0.09266561514195584,0
+echo_bird_combinations,0.615553544,1,0.22762363372315217,0
+echo_bird_combinations,0.666037185,1,0.23355181282668216,0
+echo_bird_combinations,0.362880467,1,0.23899248899248898,0
+echo_bird_combinations,0.741732887,2,0.12286277948268304,0
+echo_bird_combinations,0.489271167,2,0.2502281822649723,0
+echo_bird_combinations,0.337588762,2,0.2351339083068543,0
+echo_bird_combinations,0.413450113,1,0.25704296375983327,0
+echo_bird_combinations,0.590305447,1,0.24085797274149104,0
+echo_bird_combinations,0.766956787,2,0.019194865810968496,0
+echo_bird_combinations,0.23732223,1,0.2273908202400099,0
+echo_bird_combinations,0.464001904,2,0.24086216517857142,0
+echo_bird_combinations,0.716504923,2,0.20188739264128935,0
+echo_bird_combinations,0.438728171,1,0.2448993517570795,0
+echo_bird_combinations,0.640797369,2,0.2407198192382182,0
+echo_bird_combinations,0.388167645,2,0.25521520992870345,0
+echo_bird_combinations,0.262326493,1,0.2655504545863714,0
+echo_bird_combinations,0.691273041,1,0.23675824649039703,0
+echo_bird_combinations,0.792177155,1,0.001827506926840771,0
+echo_bird_combinations,0.287396892,1,0.24129195693476885,0
+echo_bird_combinations,0.565053282,1,0.2515382904588924,0
+
+echo_bird_combinations - Mean IoU,0.21267805855404176
+echo_bird_combinations - Detection Rate (%),0.0
+echo_bird_combinations - Cluster 1 Mean IoU,0.1993352106542469
+echo_bird_combinations - Cluster 1 Detection Rate (%),0.0
+echo_bird_combinations - Cluster 2 Mean IoU,0.20181401810890306
+echo_bird_combinations - Cluster 2 Detection Rate (%),0.0
+
+city_helicopter_combinations,0.859867902,2,0.06851967088432552,0
+city_helicopter_combinations,0.759286653,2,0.10045391750542727,0
+city_helicopter_combinations,0.583775536,1,0.12306522940851299,0
+city_helicopter_combinations,0.358426881,2,0.053670022734654106,0
+city_helicopter_combinations,0.658904694,1,0.13244601030860573,0
+city_helicopter_combinations,0.333391864,2,0.012520466146585765,0
+city_helicopter_combinations,0.633860831,2,0.09710247827703959,0
+city_helicopter_combinations,0.78434404,1,0.1124346038863976,0
+city_helicopter_combinations,0.433537308,2,0.12158925468463815,0
+city_helicopter_combinations,0.483613883,1,0.12923284387174108,0
+city_helicopter_combinations,0.809470163,1,0.07006039689387403,0
+city_helicopter_combinations,0.558734794,2,0.1240716318456306,0
+city_helicopter_combinations,0.834629606,1,0.05704531346989448,0
+city_helicopter_combinations,0.683948875,2,0.12567529144156953,0
+city_helicopter_combinations,0.734258015,2,0.09899003191104386,0
+city_helicopter_combinations,0.708995262,1,0.09304606428752214,0
+city_helicopter_combinations,0.408499925,1,0.11407563025210084,0
+city_helicopter_combinations,0.608818364,2,0.13129035564210312,0
+city_helicopter_combinations,0.885103374,2,0.05709707345871637,0
+city_helicopter_combinations,0.383463278,1,0.08232267548695332,0
+city_helicopter_combinations,0.458575603,2,0.12460345435319,0
+city_helicopter_combinations,0.533693201,2,0.12280892365638128,0
+city_helicopter_combinations,0.508653867,2,0.12765569767865603,0
+
+city_helicopter_combinations - Mean IoU,0.09912074078632883
+city_helicopter_combinations - Detection Rate (%),0.0
+city_helicopter_combinations - Cluster 1 Mean IoU,0.07021581316676309
+city_helicopter_combinations - Cluster 1 Detection Rate (%),0.0
+city_helicopter_combinations - Cluster 2 Mean IoU,0.07953954057001396
+city_helicopter_combinations - Cluster 2 Detection Rate (%),0.0
+
+city_plane_combinations,0.614428953,1,0.09298495992973982,0
+city_plane_combinations,0.791047322,2,0.05702453010512902,0
+city_plane_combinations,0.841432879,1,0.00030441400304414006,0
+city_plane_combinations,0.488166185,1,0.08059880239520958,0
+city_plane_combinations,0.740688057,2,0.07364928909952606,0
+city_plane_combinations,0.563923876,2,0.08202722800594897,0
+city_plane_combinations,0.53867142,1,0.0944120926774873,0
+city_plane_combinations,0.38715185,2,0.021401896006894572,0
+city_plane_combinations,0.71543637,2,0.07546447040796782,0
+city_plane_combinations,0.412405547,2,0.05870942713047976,0
+city_plane_combinations,0.513418009,2,0.08213429256594725,0
+city_plane_combinations,0.462911535,2,0.08609027179928667,0
+city_plane_combinations,0.664933053,1,0.0746892093485828,0
+city_plane_combinations,0.6901842,1,0.08945653316514243,0
+city_plane_combinations,0.43765962,1,0.08215537030324997,0
+city_plane_combinations,0.816318382,2,0.04212651413189771,0
+city_plane_combinations,0.765970249,2,0.07980722891566265,0
+city_plane_combinations,0.639679682,1,0.09035204991087344,0
+city_plane_combinations,0.589175944,1,0.08947248749431559,0
+
+city_plane_combinations - Mean IoU,0.07120321407349398
+city_plane_combinations - Detection Rate (%),0.0
+city_plane_combinations - Cluster 1 Mean IoU,0.06415902014623302
+city_plane_combinations - Cluster 1 Detection Rate (%),0.0
+city_plane_combinations - Cluster 2 Mean IoU,0.061145177258679094
+city_plane_combinations - Cluster 2 Detection Rate (%),0.0
+

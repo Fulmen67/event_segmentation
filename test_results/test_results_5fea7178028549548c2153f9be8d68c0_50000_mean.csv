@@ -1,0 +1,26 @@
+Sequence Name,Mean IoU (404),Mean DR (404),Window
+echo_plane_combinations,0.034,0.000,50000
+april_tag_bird_combinations,0.030,0.000,50000
+brick_dji_combinations,0.015,0.000,50000
+carpet2_drone_combinations,0.190,0.000,50000
+carpet2_plane_combinations,0.133,0.000,50000
+april_tag_drone_combinations,0.086,0.000,50000
+echo_bird_combinations,0.110,0.000,50000
+city_helicopter_combinations,0.218,0.000,50000
+city_drone_combinations,0.091,0.000,50000
+echo_helicopter_combinations,0.087,0.000,50000
+carpet2_dji_combinations,0.282,0.000,50000
+april_tag_dji_combinations,0.050,0.000,50000
+echo_dji_combinations,0.080,0.000,50000
+carpet2_bird_combinations,0.210,0.000,50000
+brick_plane_combinations,0.014,0.000,50000
+city_dji_combinations,0.021,0.000,50000
+brick_bird_combinations,0.011,0.000,50000
+brick_helicopter_combinations,0.083,0.000,50000
+carpet2_helicopter_combinations,0.020,0.000,50000
+city_plane_combinations,0.361,0.308,50000
+april_tag_plane_combinations,0.010,0.000,50000
+city_bird_combinations,0.053,0.000,50000
+april_tag_helicopter_combinations,0.047,0.000,50000
+brick_drone_combinations,0.050,0.000,50000
+echo_drone_combinations,0.050,0.000,50000

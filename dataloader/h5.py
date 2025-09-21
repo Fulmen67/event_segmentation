@@ -5,6 +5,7 @@ import numpy as np
 
 import torch
 import torch.utils.data as data
+import cv2
 
 from .base import BaseDataLoader
 from .utils import ProgressBar
@@ -53,12 +54,34 @@ class H5Loader(BaseDataLoader):
             0 for i in range(self.config["loader"]["batch_size"])
         ]  # event_idx / time_idx / frame_idx / gt_idx
 
+        self.timestamp_index = 0  # index for the GT segmentation maps
+
         # input event sequences
         self.files = []
         for root, dirs, files in os.walk(config["data"]["path"]):
             for file in files:
-                if file.endswith(".h5"):
+                if file.endswith("echo_bird_combinations.h5"):
                     self.files.append(os.path.join(root, file))
+        
+        #input gt sequences 
+        self.gt_dict = {}  # Final dictionary to store sequences
+        if self.config["data"]["mode"] == "gt_test":
+            for root, dirs, files in os.walk(config["data"]["gt_path"]):
+                self.sequence_name = os.path.basename(root)  # Extract sequence name from the folder name
+                
+                # Filter and sort files based on timestamp
+                self.gt_files = sorted(
+                    [os.path.join(root, file) for file in files if file.endswith('.png')],
+                    key=lambda x: float(os.path.basename(x).split('_')[-1].split('.png')[0])
+                )
+
+                # Create dictionary for this sequence
+                if self.gt_files:
+                    self.gt_dict[self.sequence_name] = {
+                        float(os.path.basename(path).split('_')[-1].split('.png')[0]): path for path in self.gt_files
+                    }
+            
+            self.gt_time_dict = {sequence: list(timestamps.keys()) for sequence, timestamps in self.gt_dict.items()}
 
         # open first files
         self.open_files = []
@@ -66,7 +89,7 @@ class H5Loader(BaseDataLoader):
         for batch in range(self.config["loader"]["batch_size"]):
             self.open_files.append(h5py.File(self.files[batch], "r"))
             self.batch_last_ts.append(self.open_files[-1]["events/ts"][-1] - self.open_files[-1].attrs["t0"])
-
+    
         # load frames from open files
         self.open_files_frames = []
         if self.config["data"]["mode"] == "frames":
@@ -98,7 +121,7 @@ class H5Loader(BaseDataLoader):
         Compute the number of forward passes given a sequence and an input mode and window.
         """
 
-        if self.config["data"]["mode"] == "events":
+        if self.config["data"]["mode"] == "events" or self.config["data"]["mode"] == "gt_test":
             max_iters = len(self.open_files[batch]["events/xs"])
         elif self.config["data"]["mode"] == "time":
             max_iters = self.open_files[batch].attrs["duration"]
@@ -133,7 +156,7 @@ class H5Loader(BaseDataLoader):
             self.last_proc_timestamp = ts[-1]
         return xs, ys, ts, ps
 
-    def get_event_index(self, batch, window=0):
+    def get_event_index(self, batch, window=0, gt_timestamp=0):
         """
         Get all the event indices to be used for reading.
         :param batch: batch index
@@ -153,6 +176,10 @@ class H5Loader(BaseDataLoader):
             event_idx1 = self.find_ts_index(
                 self.open_files[batch], self.batch_row[batch] + self.open_files[batch].attrs["t0"] + window
             )
+        elif self.config["data"]["mode"] == "gt_test":
+            event_idx0 = self.find_ts_index(
+                self.open_files[batch], gt_timestamp)
+            event_idx1 = event_idx0 + window
         elif self.config["data"]["mode"] == "frames":
             idx0 = int(np.floor(self.batch_row[batch]))
             idx1 = int(np.ceil(self.batch_row[batch] + window))
@@ -183,6 +210,13 @@ class H5Loader(BaseDataLoader):
         while True:
             batch = index % self.config["loader"]["batch_size"]
 
+            # get GT timestamp
+            if self.config["data"]["mode"] == "gt_test":
+
+                sequence_name = os.path.splitext(os.path.basename(self.open_files[batch].filename))[0]
+                gt_time = self.gt_time_dict[sequence_name][self.timestamp_index]
+
+            #
             # trigger sequence change
             len_frames = 0
             restart = False
@@ -203,7 +237,10 @@ class H5Loader(BaseDataLoader):
             ts = np.zeros((0))
             ps = np.zeros((0))
             if not restart:
-                idx0, idx1 = self.get_event_index(batch, window=self.config["data"]["window"])
+                if self.config["data"]["mode"] == "gt_test":
+                    idx0, idx1 = self.get_event_index(batch, window=self.config["data"]["window"], gt_timestamp= gt_time*1e9)
+                else:
+                    idx0, idx1 =  self.get_event_index(batch, window=self.config["data"]["window"])
 
                 if (
                     self.config["data"]["mode"] == "frames"
@@ -228,6 +265,8 @@ class H5Loader(BaseDataLoader):
             if (self.config["data"]["mode"] == "events" and xs.shape[0] < self.config["data"]["window"]) or (
                 self.config["data"]["mode"] == "time"
                 and self.batch_row[batch] + self.config["data"]["window"] >= self.batch_last_ts[batch]
+            ) or (self.config["data"]["mode"] == "gt_test" and xs.shape[0] < self.config["data"]["window"]) or (
+                self.config["data"]["mode"] == "gt_test" and self.timestamp_index >= len(self.gt_time_dict[sequence_name]) -1
             ):
                 restart = True
 
@@ -243,6 +282,7 @@ class H5Loader(BaseDataLoader):
                 self.new_seq = True
                 self.reset_sequence(batch)
                 self.batch_row[batch] = 0
+                self.timestamp_index = 0
                 self.batch_idx[batch] = max(self.batch_idx) + 1
 
                 self.open_files[batch].close()
@@ -320,8 +360,19 @@ class H5Loader(BaseDataLoader):
                     dt_gt = self.open_files_flowmaps[batch].ts[idx] - self.open_files_flowmaps[batch].ts[idx - 1]
             dt_gt = np.asarray(dt_gt)
 
+            # load GT segmentation mask when required
+            if self.config["data"]["mode"] == "gt_test":
+                mask = cv2.imread(self.gt_dict[sequence_name][gt_time], cv2.IMREAD_GRAYSCALE)
+                mask = (mask > 128).astype(np.uint8)
+                mask = torch.from_numpy(mask)
+                mask_for_gt = torch.sum(event_voxel, dim=0) > 0
+                mask [~mask_for_gt] = 0
+                
             # update window
             self.batch_row[batch] += self.config["data"]["window"]
+
+            # update timestamp index
+            self.timestamp_index += 1
 
             # break while loop if everything went well
             break
@@ -339,5 +390,9 @@ class H5Loader(BaseDataLoader):
             output["gtflow"] = flowmap
         output["dt_gt"] = torch.from_numpy(dt_gt)
         output["dt_input"] = torch.from_numpy(dt_input)
-
+        if self.config["data"]["mode"] == "gt_test":
+            output["gt_mask"] = mask
+            output["gt_timestamp"] = torch.tensor(gt_time)
+            output["mask_for_gt"] = mask_for_gt
+            output["sequence_name"] = torch.tensor([ord(c) for c in sequence_name], dtype=torch.int32)
         return output

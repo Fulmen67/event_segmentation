@@ -14,9 +14,16 @@ import pandas as pd
 # TODO: add option to remove hot pixels already in the preprocessing stage
 def process(path, args, original_res=(480, 640)):
     
-    folders, filename = os.path.split(path)
-    folders = folders.split("/")
-    ep = H5Packager(args.output_dir + filename.split(".")[0] + ".h5")
+    filename = os.path.basename(path).replace(".bag", "")
+    background_name = filename.split("_")[0]
+    background_output_dir = os.path.join(args.output_dir, background_name)
+    os.makedirs(background_output_dir, exist_ok=True)
+    h5_path = background_output_dir + "/"  + filename + ".h5"
+    if os.path.isfile(h5_path):
+        #print that h5 file already exists
+        print(filename,".h5 already exists")
+        return
+    ep = H5Packager(h5_path)
     t0 = -1
     idx = 0
     sensor_size = None
@@ -96,15 +103,15 @@ if __name__ == "__main__":
     Tool for converting EVIMO2 Dataset.
     """
     parser = argparse.ArgumentParser()
-    parser.add_argument("--path", default="/Users/youssef/Desktop/MSc/Thesis-Code/datasets/ESIM/eval/oneobject/combinations/")
-    parser.add_argument("--output_dir", default="/Users/youssef/Desktop/MSc/Thesis-Code/datasets/ESIM_h5/eval/oneobject/combinations/")
+    parser.add_argument("--path", default="/media/yousef/USB/bag_cb/")
+    parser.add_argument("--output_dir", default="/home/yousef/Documents/event_segmentation/dataset/train/h5/new/")
     args = parser.parse_args()
 
     # get files to process
     paths = []
     for root, dirs, files in os.walk(args.path):
         for file in files:
-            if file.endswith(".bag"):
+            if file.endswith("computers_chair.bag"):
                 paths.append(os.path.join(root, file))
     
     # make sure output directory exists

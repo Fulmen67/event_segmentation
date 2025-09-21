@@ -1,0 +1,21 @@
+Sequence Name,Mean IoU (EMSGC),Mean (EMSGC),Window
+april_tag_dji_combinations,0.0,0.0,50000
+april_tag_drone_combinations,0.0,0.0,50000
+april_tag_helicopter_combinations,0.0,0.0,50000
+april_tag_plane_combinations,0.0,0.0,50000
+brick_bird_combinations,0.1024003796864784,0.0,50000
+brick_drone_combinations,0.04006938620090548,0.0,50000
+brick_helicopter_combinations,0.026447715361499785,0.0,50000
+brick_plane_combinations,0.0,0.0,50000
+carpet2_bird_combinations,0.0,0.0,50000
+carpet2_dji_combinations,0.016740153108192553,0.0,50000
+carpet2_drone_combinations,0.05112832824679694,0.0,50000
+carpet2_helicopter_combinations,0.11838894234133777,0.0,50000
+carpet2_plane_combinations,0.04698357353121447,0.0,50000
+city_helicopter_combinations,0.003018002391037797,0.0,50000
+city_plane_combinations,0.0,0.0,50000
+echo_bird_combinations,0.1949077394283979,0.041666666666666664,50000
+echo_dji_combinations,0.02852986984412006,0.0,50000
+echo_drone_combinations,0.0554303730394077,0.0,50000
+echo_helicopter_combinations,0.09416653010159737,0.0,50000
+echo_plane_combinations,0.0,0.0,50000

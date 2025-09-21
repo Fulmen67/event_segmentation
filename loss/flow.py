@@ -25,6 +25,41 @@ def spatial_variance(x):
         keepdim=True,
     )
 
+# Intersection Over Union (IoU) metric
+
+def compute_iou(pred_mask, gt_mask):
+    """Computer Intersection over Union (IoU) between predicted and ground truth mask"""
+
+    intersection = torch.logical_and(pred_mask, gt_mask).sum().float()
+    union = torch.logical_or(pred_mask, gt_mask).sum().float()
+
+    iou = intersection / union if union > 0 else torch.tensor(1.0)
+
+    return iou
+
+# Detection Rate (DR) metric
+
+def compute_detection_rate(pred_mask, gt_mask, threshold=0.5):
+    """Check if the predicted mask meets the DR criteria"""
+    
+    intersection = np.logical_and(pred_mask, gt_mask).sum()
+    union = np.logical_or(pred_mask, gt_mask).sum()
+    false_positives = np.logical_and(pred_mask, np.logical_not(gt_mask)).sum()
+
+    #compute iou
+    iou = intersection/union if union > 0 else 1
+   
+    #condition 1: iou >= threshold
+    condition1 = iou >= threshold
+
+    #condition 2: intersection with ground truth is greater than false positives
+    condition2 = intersection >= false_positives 
+
+    #compute detection
+    dt = condition1 and condition2
+
+    return dt
+
 
 class EventWarping(torch.nn.Module):
     """
@@ -627,3 +662,6 @@ class AEE(BaseValidationLoss):
         percent_AEE = outliers.sum() / (num_valid_px + 1e-9)
 
         return AEE, percent_AEE
+    
+    # make a class for Intersection over Union, and another class for Detection Rate
+

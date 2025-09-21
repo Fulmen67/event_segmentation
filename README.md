@@ -2,19 +2,22 @@
 
 Repository inspired from [event_flow](https://github.com/tudelft/event_flow)
 
-Scientific Paper: [here](https://drive.google.com/file/d/1DzfJf9MdrnNPFfW4VKw7VO4M3yNSfLif/view?usp=drive_link).
+This work is featured in CVPR 2025 Event-based Vision Workshop: [here](https://openaccess.thecvf.com/content/CVPR2025W/EventVision/papers/Farah_EV-LayerSegNet_Self-supervised_Motion_Segmentation_using_Event_Cameras_CVPRW_2025_paper.pdf).
 
 If you use this code, please cite our work:
 
 ```bibtex
-@unpublished{farahparedesetal2023,
-  title={EV-LayerSegNet: Self-supervised Motion Segmentation using Event Cameras},
-  author={Farah, Youssef and Paredes-Vall\'es, Federico and de Croon, Guido},
-  year={2023}
+@InProceedings{Farah_2025_CVPR,
+    author    = {Farah, Youssef and Paredes-Valles, Federico and De Croon, Guido and Humais, Muhammad Ahmed and Sajwani, Hussain and Zweiri, Yahya},
+    title     = {EV-LayerSegNet: Self-supervised Motion Segmentation using Event Cameras},
+    booktitle = {Proceedings of the IEEE/CVF Conference on Computer Vision and Pattern Recognition (CVPR) Workshops},
+    month     = {June},
+    year      = {2025},
+    pages     = {5135-5144}
 }
 ```
 
-This code allows for the reproduction of the experiments leading to the results in Section 5.
+This code allows for the reproduction of the experiments leading to the results in Section 6.
 
 <!-- &nbsp; -->
 <img src=".readme/cover.png"  />

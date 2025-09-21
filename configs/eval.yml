@@ -1,7 +1,7 @@
 data:
-    path: /data/youssef/datasets/evimo_2_h5/eval_cropped_240x240
-    mode: gtflow_dt1 # gtflow_dt1/gtflow_dt4
-    window: 50000 # 1 for dt1, 0.25 for dt4
+    path: dataset/test/recordings_h5
+    mode: gt_test # gtflow_dt1/gtflow_dt4
+    window: 100000 # 1 for dt1, 0.25 for dt4
     window_eval: 50000 # not used
 
 model:

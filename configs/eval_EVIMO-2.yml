@@ -1,0 +1,34 @@
+data:
+    path: /home/yousef/Documents/event_segmentation/dataset/test/recordings_h5/
+    gt_path: /home/yousef/shared_for_test/test/ground_truth_images/
+    mode: gt_test # gtflow_dt1/gtflow_dt4
+    window: 50000 # 1 for dt1, 0.25 for dt4
+    window_eval: 0 # not used
+
+model:
+    mask_output: True
+    num_bins: 5
+    round_encoding: False # for voxel encoding
+
+metrics:
+    name: [IOU, DR]  # FWL, RSAT, AEE for flow, IOU and DR for segmentation
+    flow_scaling: 640 # 12800 * 1e11
+
+loader:
+    batch_size: 1
+    resolution: [480, 640] #[260, 346] H x W
+    augment: []
+    gpu: 0
+
+vis:
+    enabled: True
+    px: 400
+    bars: False
+    activity: False
+    store: True
+
+hot_filter:
+    enabled: True
+    max_px: 100
+    min_obvs: 5
+    max_rate: 0.8

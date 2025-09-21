@@ -25,7 +25,7 @@ class Visualization:
                 os.makedirs(self.store_dir)
             self.store_file = None
 
-    def update(self, inputs, flow, iwe, events_window=None, masked_window_flow=None, iwe_window=None):
+    def update(self, inputs, flow, alpha_masks, flow_total, iwe, events_window=None, masked_window_flow=None, iwe_window=None):
         """
         Live visualization.
         :param inputs: dataloader dictionary
@@ -36,6 +36,7 @@ class Visualization:
         events = inputs["event_cnt"] if "event_cnt" in inputs.keys() else None
         frames = inputs["frames"] if "frames" in inputs.keys() else None
         gtflow = inputs["gtflow"] if "gtflow" in inputs.keys() else None
+        gtmask = inputs["gt_mask"] if "gt_mask" in inputs.keys() else None
         height = events.shape[2]
         width = events.shape[3]
 
@@ -115,7 +116,37 @@ class Visualization:
             cv2.resizeWindow("Image of Warped Events - Eval window", int(self.px), int(self.px))
             cv2.imshow("Image of Warped Events - Eval window", iwe_window_npy)
 
-        cv2.waitKey(1)
+        # visualize alpha masks, we need to make as many windows as there are masks in the batch
+        if alpha_masks is not None:
+            alpha_masks = alpha_masks.detach().cpu().numpy()
+            for i in range(alpha_masks.shape[1]):
+                mask = alpha_masks[0, i, :, :].astype(np.float32)
+                mask = (mask * 255).astype(np.uint8)
+                cv2.namedWindow(f"Class {i}", cv2.WINDOW_NORMAL)
+                cv2.resizeWindow(f"Class {i}", int(self.px), int(self.px))
+                cv2.imshow(f"Class {i}", mask)
+        
+
+        # visualize flows, 
+        if flow_total is not None:
+            flow_total = flow_total.detach().cpu()
+            for i in range(flow_total.shape[1]):
+                flow_new = flow_total[0, i, :, :, :].unsqueeze(0).numpy().transpose(0, 2, 3, 1).reshape((height, width, 2))
+                flow_new = self.flow_to_image(flow_new[:, :, 0], flow_new[:, :, 1])
+                flow_new = cv2.cvtColor(flow_new, cv2.COLOR_RGB2BGR)
+                cv2.namedWindow(f"Estimated Flow {i}", cv2.WINDOW_NORMAL)
+                cv2.resizeWindow(f"Estimated Flow {i}", int(self.px), int(self.px))
+                cv2.imshow(f"Estimated Flow {i}", flow_new)
+
+        # visualize ground truth mask
+        if gtmask is not None:
+            gtmask = gtmask.detach().cpu().numpy()
+            gtmask = (gtmask * 255).astype(np.uint8).squeeze(0).transpose(1,0)
+            cv2.namedWindow("Ground Truth Mask", cv2.WINDOW_NORMAL)
+            cv2.resizeWindow("Ground Truth Mask", int(self.px), int(self.px))
+            cv2.imshow("Ground Truth Mask", gtmask)
+
+        cv2.waitKey(2000)
 
     def store(self, inputs, flow, iwe, sequence, events_window=None, masked_window_flow=None, iwe_window=None, ts=None):
         """
@@ -224,7 +255,7 @@ class Visualization:
             self.store_file.flush()
 
         self.img_idx += 1
-        cv2.waitKey(1)
+        cv2.waitKey(2000)
 
     @staticmethod
     def flow_to_image(flow_x, flow_y):

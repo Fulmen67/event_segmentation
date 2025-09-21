@@ -2,7 +2,7 @@
 Adapted from TUDelft-MAVLab https://github.com/tudelft/event_flow
 """
 
-import argparse, csv
+import argparse, csv, os
 
 import mlflow
 import numpy as np
@@ -11,7 +11,7 @@ from torch.optim import *
 
 from configs.parser import YAMLParser
 from dataloader.h5 import H5Loader
-from loss.flow import FWL, RSAT, AEE, EventWarping
+from loss.flow import FWL, RSAT, AEE, EventWarping, compute_iou, compute_detection_rate
 from models.model import (
     EVFlowNet,
     EVFlowSegNet,
@@ -86,7 +86,10 @@ def test(args, config_parser):
     criteria = []
     if "metrics" in config.keys():
         for metric in config["metrics"]["name"]:
+            if metric == "IOU" or metric == "DR":
+                continue
             criteria.append(eval(metric)(config, device, flow_scaling=config["metrics"]["flow_scaling"]))
+            
 
     # data loader
     data = H5Loader(config, config["model"]["num_bins"])
@@ -99,7 +102,7 @@ def test(args, config_parser):
         **kwargs,
     )
 
-    loss_function = EventWarping(config, device, flow_scaling=config["metrics"]["flow_scaling"])
+    #loss_function = EventWarping(config, device, flow_scaling=config["metrics"]["flow_scaling"])
     save = False
     # inference loop
     idx_AEE = 0
@@ -107,11 +110,64 @@ def test(args, config_parser):
     end_test = False
     activity_log = None
     loss_list = []
+    dr_list = []
+    iou_list = []
+    gt_timestamp_list = []
+
+    # Define the CSV file path
+    csv_file_path = os.path.join(args.path_results, f"test_results_{args.runid}"+"_"+str(config["data"]["window"])+".csv")
+    csv_mean_file_path = os.path.join(args.path_results, f"test_results_{args.runid}"+"_"+str(config["data"]["window"])+"_mean.csv")
+
+    # Define headers for the CSV file
+    headers = ["Sequence Name", "Timestamp (s)", "IoU", "DR", "Window"]
+    headers_mean = ["Sequence Name", "Mean IoU", "Mean DR", "Window"]
+
     with torch.no_grad():
         while True:
             for inputs in dataloader:
 
                 if data.new_seq:
+                    #compute mean IoU and Detection Rate, and print them
+                    mean_iou = np.mean(iou_list)
+                    #print(f"Mean IoU is {round(mean_iou,3)}")
+                    mean_dr = np.mean(dr_list)
+                    #print(f"Mean Detection Rate is {round(mean_dr,3)}")
+                    # Create/open CSV file and write results
+                    """
+                    with open(csv_file_path, mode="a", newline="") as file, open(csv_mean_file_path, mode="a", newline="") as file_mean:
+                        writer = csv.writer(file)
+                        writer_mean = csv.writer(file_mean)
+                        sequence_name = ''.join([chr(int(i.item())) for i in inputs["sequence_name"].flatten()])
+                        # Write the headers
+                        if file.tell() == 0:
+                            writer.writerow(headers)
+                        if file_mean.tell() == 0:
+                            writer_mean.writerow(headers_mean)    
+
+                        # Iterate through all recorded values
+                        for i in range(len(iou_list)):
+                            # Convert timestamp from nanoseconds to seconds (assuming inputs["gt_timestamp"] is in ns)
+                            t_sec = gt_timestamp_list[i]
+
+                            # Compute computational time per sample (You might need to track this during inference)
+                            computational_time_ms = None  # Replace with actual computation time tracking
+
+                            # Write data row
+                            writer.writerow([
+                                sequence_name,  # Replace with actual sequence name variable
+                                f"{t_sec:.9f}",  # Timestamp in seconds
+                                f"{iou_list[i]:.6f}",  # IoU
+                                f"{dr_list[i]:.6f}",  # Detection Rate
+                                config["data"]["window"]  # Computational time in ms
+                            ])
+                        writer_mean.writerow([sequence_name, f"{mean_iou:.3f}", f"{mean_dr:.3f}", config["data"]["window"]])
+                        """
+
+                    #print(f"Results saved to {csv_file_path}")
+
+                    gt_timestamp_list = []
+                    dr_list = []
+                    iou_list = []
                     data.new_seq = False
                     activity_log = None
                     model.reset_states()
@@ -146,6 +202,27 @@ def test(args, config_parser):
                     round_idx=True,
                 )
                 
+                # computer Intersection Over Union (IoU) and Detection Rate between predicted and ground truth mask
+                if "metrics" in config.keys():
+                    if "IOU" in config["metrics"]["name"]:
+                        
+                        # compute IoU
+                        foreground_mask = alpha_masks[:, 0, :, :].clone().transpose(1,2)
+                        foreground_mask[~inputs["mask_for_gt"]] = 0
+                        
+                        iou = compute_iou(foreground_mask, inputs["gt_mask"])
+                        iou_list.append(iou.item())
+
+                    if "DR" in config["metrics"]["name"]:
+                        dr = compute_detection_rate(foreground_mask, inputs["gt_mask"])
+                        dr_list.append(dr.item())
+
+                    #print iou as float and associated timestamp inputs["gt_timestamp"] and sequence name inputs ["sequence name"] ex "IoU is 0.5 at timestamp 0.1 in sequence name"
+                    print(f"IoU = {round(iou.item(),3)} and DR = {round(dr.item(),3)} at timestamp {round(inputs['gt_timestamp'].item(),3)} s")
+                    gt_timestamp_list.append(inputs["gt_timestamp"].item())
+                    
+            
+
                 """
                 iwe_window_vis = None
                 events_window_vis = None
@@ -214,6 +291,7 @@ def test(args, config_parser):
                         bar.next()
                 if config["vis"]["enabled"]:
                     vis.update(inputs, flow_vis, alpha_masks, flow_total, iwe)
+                    #vis.update(inputs, None, alpha_masks, None, None )
                 """if config["vis"]["store"]:
                     sequence = data.files[data.batch_idx[0] % len(data.files)].split("/")[-1].split(".")[0]
                     vis.store(
@@ -267,7 +345,7 @@ if __name__ == "__main__":
         default="",
         help="location of the mlflow ui",
     )
-    parser.add_argument("--path_results", default="results_inference/")
+    parser.add_argument("--path_results", default="test_results/")
     parser.add_argument(
         "--debug",
         action="store_true",

@@ -231,6 +231,8 @@ class EVFlowNet_Segmentation(BaseModel):
 
             flow_list[b,:,0,:,:] = flow[:,:,:,0] 
             flow_list[b,:,1,:,:] = flow[:,:,:,1]
+        
+        flow_total = flow_list.clone()
 
         # Find max values for each pixel in the alpha mask
         max_vals, _ = torch.max(multires_flow["alpha mask"], dim=1, keepdim=True)
@@ -247,7 +249,7 @@ class EVFlowNet_Segmentation(BaseModel):
         alpha_masks = multires_flow["alpha mask"].clone()
         alpha_masks[alpha_masks != 0] = 1
 
-        return {"flow": flow_list, "alpha_masks": alpha_masks, "activity": activity} 
+        return {"flow": flow_list, "alpha_masks": alpha_masks, "flow_total": flow_total, "activity": activity} 
 
 
 
