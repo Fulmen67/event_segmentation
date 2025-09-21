@@ -67,19 +67,19 @@ pip install -r requirements.txt
 
 ### Download datasets
 
-In this work, we use our dataset generated with ESIM:
-- `event_segmentation/datasets/AffineObjects`: [AffineObjects Datasets](https://drive.google.com/file/d/1MH-KOxXU2LM5bE_mknPszNRjoijEVRhj/view?usp=sharing)
+In this work, we train our model on our dataset generated with ESIM:
+- `event_segmentation/datasets/`: [AffineObjects Datasets](https://drive.google.com/file/d/1x37j2elS72DQFpZM3yiZuS5mw5YfunFt/view?usp=drive_link)
 
 
 These datasets can be downloaded in the expected HDF5 data format and they should be placed in `event_segmentation/datasets/` (as shown above). 
 
-Download size: 2.4 GB. Uncompressed size: 3.6 GB.
+Download size: 3.1 GB. Uncompressed size: 3.4 GB.
 
 Details about the structure of these files can be found in `event_segmentation/datasets/tools/`. 
 
 ### Download models
 
-The pretrained models can be downloaded from [here](https://drive.google.com/file/d/1e2qcmpkNTpfGv4ujbE47pk-aD6sQ7Oo6/view?usp=sharing), and are expected at `event_segmentation/mlruns/`. 
+The pretrained models can be downloaded from [here](https://drive.google.com/file/d/1MCwUGVPT3zKZw0AJ6y8lkRtC4Ld7TRPR/view?usp=drive_link), and are expected at `event_segmentation/mlruns/`. 
 
 In this project we use [MLflow](https://www.mlflow.org/docs/latest/index.html#) to keep track of the experiments. To visualize the models that are available, alongside other useful details, run the following from the home directory of the project:
 
@@ -91,7 +91,7 @@ and access [http://127.0.0.1:5000](http://127.0.0.1:5000) from your browser of c
 
 ## Test
 
-To test EV-LayerSegNet on the test subset of AffineObjects, run:
+To test EV-LayerSegNet on the test set, run:
 
 ```
 python eval_flow.py <runid> --config configs/eval.yml
